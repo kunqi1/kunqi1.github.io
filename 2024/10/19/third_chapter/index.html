@@ -27,8 +27,8 @@
 <meta property="og:site_name" content="0xkunqil">
 <meta property="og:description" content="1 函数 在Rust里，不关心函数的位置，无论调用前后声明都可以。 函数命名的开头必须是字符或下划线，后面再跟数字等，函数名不能仅有一个下划线。 Rust习惯使用蛇形命名法，用下划线分割。  1.1有返回值的函数123fn add_two(i:i32, j:i32) -&gt; i32 &#123;    i + j&#125;  以上写法等价于： 123fn add_two(i:i32, j:i">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2024-10-19T10:42:38.269Z">
-<meta property="article:modified_time" content="2024-10-19T10:42:38.269Z">
+<meta property="article:published_time" content="2024-10-19T13:06:32.952Z">
+<meta property="article:modified_time" content="2024-10-19T13:06:32.952Z">
 <meta property="article:author" content="Kunqi Liu">
 <meta name="twitter:card" content="summary">
 
@@ -174,7 +174,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2024-10-19 18:42:38" itemprop="dateCreated datePublished" datetime="2024-10-19T18:42:38+08:00">2024-10-19</time>
+              <time title="Created: 2024-10-19 21:06:32" itemprop="dateCreated datePublished" datetime="2024-10-19T21:06:32+08:00">2024-10-19</time>
             </span>
 
           
@@ -292,7 +292,7 @@
 
 <p>还有一种场景，即我们在遍历的过程中，希望改变所取元素的值：</p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">v</span> = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">e</span> <span class="keyword">in</span> &amp;<span class="keyword">mut</span> v &#123;</span><br><span class="line">        <span class="keyword">if</span> *e == <span class="number">2</span> &#123;</span><br><span class="line">            *e = <span class="number">5</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, v[<span class="number">1</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>此时除了将vector改成可变类型外，由于e和v的类型在for循环中都是<code>&amp;mut i32</code>，赋值时应使用类似C语言中的指针符号去访问值<code>*e</code></p>
+<p>此时除了将vector改成可变类型外，由于e和v的类型在for循环中都是可变引用类型<code>&amp;mut</code>，赋值时应使用解引用符号去访问值<code>*e</code></p>
 
     </div>
 
