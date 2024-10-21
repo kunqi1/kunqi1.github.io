@@ -146,6 +146,63 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/10/21/Fifth-chapter/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kunqi Liu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="0xkunqil">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/10/21/Fifth-chapter/" class="post-title-link" itemprop="url">Fifth_chapter</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-10-21 20:44:52" itemprop="dateCreated datePublished" datetime="2024-10-21T20:44:52+08:00">2024-10-21</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2024/10/21/Forth_chapter/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -171,7 +228,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2024-10-21 19:46:57 / Modified: 20:43:47" itemprop="dateCreated datePublished" datetime="2024-10-21T19:46:57+08:00">2024-10-21</time>
+              <time title="Created: 2024-10-21 19:46:57 / Modified: 20:45:04" itemprop="dateCreated datePublished" datetime="2024-10-21T19:46:57+08:00">2024-10-21</time>
             </span>
 
           
@@ -339,23 +396,10 @@
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">get_product_without_element</span>(arr: &amp;[<span class="type">i32</span>], index: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;<span class="type">i32</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt;= arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">       <span class="literal">None</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">mut_product</span> = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">      <span class="keyword">if</span> i == index &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      mut_product *= arr[i];</span><br><span class="line">    &#125;</span><br><span class="line">      <span class="title function_ invoke__">Some</span>(mut_product)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>解法2:</p>
-<pre><code class="rust">fn get_product_without_element(arr: &amp;[i32], index: usize) -&gt; Option&lt;i32&gt; &#123;
-    if index &lt; 0 || index &gt;= arr.len() &#123;
-       None
-    &#125;
-    let total_product = arr.iter().product::&lt;i32&gt;();
-    if arr[index] == 0 &#123;
-      if arr.iter().filter(|&amp;&amp;x| x == 0).count() &gt; 1 &#123;
-        Some(0)
-      &#125; else arr.iter().filter(|&amp;&amp;x| x == 0).count() == 1 &#123;
-        Some(arr.iter().filter(|&amp;&amp;x| x!= 0).product()) 
-      &#125;
-    &#125; else &#123;
-      Some(total_product / arr[index])
-    &#125;
-&#125;
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">get_product_without_element</span>(arr: &amp;[<span class="type">i32</span>], index: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;<span class="type">i32</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> index &lt; <span class="number">0</span> || index &gt;= arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">       <span class="literal">None</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">total_product</span> = arr.<span class="title function_ invoke__">iter</span>().product::&lt;<span class="type">i32</span>&gt;();</span><br><span class="line">    <span class="keyword">if</span> arr[index] == <span class="number">0</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> arr.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">filter</span>(|&amp;&amp;x| x == <span class="number">0</span>).<span class="title function_ invoke__">count</span>() &gt; <span class="number">1</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(<span class="number">0</span>)</span><br><span class="line">      &#125; <span class="keyword">else</span> arr.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">filter</span>(|&amp;&amp;x| x == <span class="number">0</span>).<span class="title function_ invoke__">count</span>() == <span class="number">1</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(arr.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">filter</span>(|&amp;&amp;x| x!= <span class="number">0</span>).<span class="title function_ invoke__">product</span>()) </span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="title function_ invoke__">Some</span>(total_product / arr[index])</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-</code></pre>
+
+
 
       
     </div>
@@ -872,7 +916,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
