@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="1 所有权 Rust所有权规则可以总结为如下几句话：   Rust中的每个值都有一个被称为其所有者的变量(即：值的所有者是某个变量) 值在任一时刻有且只有一个所有者 当所有者(变量)离开作用域，这个值将被销毁   这里对第三点做一些补充性的解释，所有者离开作用域会导致值被销毁，这个过程实际上是调用一个名为drop的函数来销毁数据释放内存。在前文解释作用域规则时曾提到过，销毁的数据特指堆栈中的数据，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Rust基础:所有权、引用、数组与切片">
+<meta property="og:url" content="http://example.com/2024/10/21/forth-chapter/index.html">
+<meta property="og:site_name" content="0xkunqil">
+<meta property="og:description" content="1 所有权 Rust所有权规则可以总结为如下几句话：   Rust中的每个值都有一个被称为其所有者的变量(即：值的所有者是某个变量) 值在任一时刻有且只有一个所有者 当所有者(变量)离开作用域，这个值将被销毁   这里对第三点做一些补充性的解释，所有者离开作用域会导致值被销毁，这个过程实际上是调用一个名为drop的函数来销毁数据释放内存。在前文解释作用域规则时曾提到过，销毁的数据特指堆栈中的数据，">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-10-21T11:46:57.000Z">
+<meta property="article:modified_time" content="2024-10-21T11:48:03.850Z">
+<meta property="article:author" content="Kunqi Liu">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2024/10/21/forth-chapter/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Rust基础:所有权、引用、数组与切片 | 0xkunqil</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">0xkunqil</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">kunqi的技术博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/10/21/forth-chapter/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kunqi Liu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="0xkunqil">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Rust基础:所有权、引用、数组与切片
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-10-21 19:46:57 / Modified: 19:48:03" itemprop="dateCreated datePublished" datetime="2024-10-21T19:46:57+08:00">2024-10-21</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="1-所有权"><a href="#1-所有权" class="headerlink" title="1 所有权"></a>1 所有权</h2><ul>
+<li>Rust所有权规则可以总结为如下几句话：</li>
+</ul>
+<ol>
+<li>Rust中的每个值都有一个被称为其所有者的变量(即：值的所有者是某个变量)</li>
+<li>值在任一时刻有且只有一个所有者</li>
+<li>当所有者(变量)离开作用域，这个值将被销毁</li>
+</ol>
+<ul>
+<li>这里对第三点做一些补充性的解释，所有者离开作用域会导致值被销毁，这个过程实际上是调用一个名为drop的函数来销毁数据释放内存。在前文解释作用域规则时曾提到过，销毁的数据特指堆栈中的数据，如果变量绑定的值是全局内存区内的数据，则数据不会被销毁。</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello, world!&quot;</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>脱离作用域时，S就会被销毁</li>
+</ul>
+<h3 id="1-1谁是谁的所有者"><a href="#1-1谁是谁的所有者" class="headerlink" title="1.1谁是谁的所有者"></a>1.1谁是谁的所有者</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello, world!&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>多数人可能会误以为变量s是堆中字符串数据hello的所有者，但实际上不是。</p>
+</li>
+<li><p>前面介绍内存的文章中解释过，String字符串的实际数据在堆中，但是String大小不确定，所以在栈中使用一个胖指针结构来表示这个String类型的数据，这个胖指针中的指针指向堆中的String实际数据。也就是说，变量s的值是那个胖指针，而不是堆中的实际数据。</p>
+</li>
+<li><p>因此，变量s是那个胖指针的所有者，而不是堆中实际数据的所有者。</p>
+</li>
+<li><p>但是，由于胖指针是指向堆中数据的，多数时候为了简化理解简化描述方式，也经常会说s是那个堆中实际数据的所有者。</p>
+</li>
+</ul>
+<h3 id="1-2-指针的绑定"><a href="#1-2-指针的绑定" class="headerlink" title="1.2 指针的绑定"></a>1.2 指针的绑定</h3><ul>
+<li>在其他语言中，经常可以看到两个不同的指针指向同一块内存的情况。</li>
+<li>但在Rust中，由于所有权的规则，变量跳出作用域后释放堆中的值，等两个不同指针也相应释放时，就会造成二次释放内存污染。</li>
+<li>所以对于Rust中：<blockquote>
+<p>let s2 &#x3D; s1;</p>
+</blockquote>
+</li>
+</ul>
+<p>直接让s1变成未初始化变量，而将s2绑定在堆内存上，这样就发生了一次所有权的转移。</p>
+<p>所有权移动后修改数据：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">x</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// x将所有权转移给y，但y无法修改字符串</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">y</span> = x;   </span><br><span class="line">y.<span class="title function_ invoke__">push</span>(<span class="string">&#x27;C&#x27;</span>);  <span class="comment">// 本行报错</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">a</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"><span class="comment">// 虽然a无法修改字符串，但转移所有权后，b可修改字符串</span></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">b</span> = a; </span><br><span class="line">b.<span class="title function_ invoke__">push</span>(<span class="string">&#x27;C&#x27;</span>);   <span class="comment">// 本行不报错</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-引用和所有权借用"><a href="#1-3-引用和所有权借用" class="headerlink" title="1.3 引用和所有权借用"></a>1.3 引用和所有权借用</h3><ul>
+<li>所有权不仅可以转移(原变量会丢失数据的所有权)，还可以通过引用的方式来借用数据的所有权(borrow ownership)。</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s1</span> = &amp;s; <span class="comment">// 借用</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s2</span> = &amp;s; <span class="comment">// 再次借用</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;, &#123;&#125;, &#123;&#125;&quot;</span>,s, s1, s2);</span><br><span class="line">  &#125;  <span class="comment">// sf2离开，sf1离开，s离开</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>&amp;s</code>表示创建变量s的引用，为某个变量创建引用的过程不会转移该变量所拥有的所有权。</p>
+<h3 id="1-4-可变引用和不可变引用的所有权规则"><a href="#1-4-可变引用和不可变引用的所有权规则" class="headerlink" title="1.4 可变引用和不可变引用的所有权规则"></a>1.4 可变引用和不可变引用的所有权规则</h3><p>变量的引用分为可变引用&amp;mut var和不可变引用&amp;var，站在所有权借用的角度来看，可变引用表示的是可变借用，不可变引用表示的是不可变借用。</p>
+<ol>
+<li>不可变借用：借用只读权，不允许修改其引用的数据</li>
+<li>可变引用：借用可写权(包括可读权)，允许修改其引用的数据</li>
+<li>多个不可变引用可共存(可同时读)</li>
+<li>可变引用具有排他性，在有可变引用时，不允许存在该数据的其他可变和不可变引用</li>
+</ol>
+<p>如要使用可变引用去修改数据值，要求：</p>
+<p>var的变量可变，即<code>let mut var = xxx</code><br>var的引用可变，即<code>let varf = &amp;mut var</code></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">x</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;junmajinlong&quot;</span>);</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">x_ref</span> = &amp;<span class="keyword">mut</span> x;  <span class="comment">// 借用s的可写权</span></span><br><span class="line">  x_ref.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;.com&quot;</span>);</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, x);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">  <span class="title function_ invoke__">f1</span>(&amp;<span class="keyword">mut</span> s);   <span class="comment">// 借用s的可写权</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, s);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">f1</span>(s: &amp;<span class="keyword">mut</span> <span class="type">String</span>)&#123;</span><br><span class="line">  s.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;world&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/10/19/third_chapter/" rel="prev" title="Rust基础:函数、流程控制等基本概念">
+      <i class="fa fa-chevron-left"></i> Rust基础:函数、流程控制等基本概念
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%89%80%E6%9C%89%E6%9D%83"><span class="nav-number">1.</span> <span class="nav-text">1 所有权</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1%E8%B0%81%E6%98%AF%E8%B0%81%E7%9A%84%E6%89%80%E6%9C%89%E8%80%85"><span class="nav-number">1.1.</span> <span class="nav-text">1.1谁是谁的所有者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E6%8C%87%E9%92%88%E7%9A%84%E7%BB%91%E5%AE%9A"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 指针的绑定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E5%BC%95%E7%94%A8%E5%92%8C%E6%89%80%E6%9C%89%E6%9D%83%E5%80%9F%E7%94%A8"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 引用和所有权借用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E5%8F%AF%E5%8F%98%E5%BC%95%E7%94%A8%E5%92%8C%E4%B8%8D%E5%8F%AF%E5%8F%98%E5%BC%95%E7%94%A8%E7%9A%84%E6%89%80%E6%9C%89%E6%9D%83%E8%A7%84%E5%88%99"><span class="nav-number">1.4.</span> <span class="nav-text">1.4 可变引用和不可变引用的所有权规则</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Kunqi Liu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Kunqi Liu</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
