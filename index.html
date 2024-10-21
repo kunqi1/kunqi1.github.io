@@ -171,7 +171,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2024-10-21 19:46:57 / Modified: 19:48:03" itemprop="dateCreated datePublished" datetime="2024-10-21T19:46:57+08:00">2024-10-21</time>
+              <time title="Created: 2024-10-21 19:46:57 / Modified: 20:43:47" itemprop="dateCreated datePublished" datetime="2024-10-21T19:46:57+08:00">2024-10-21</time>
             </span>
 
           
@@ -242,8 +242,120 @@
 <p>var的变量可变，即<code>let mut var = xxx</code><br>var的引用可变，即<code>let varf = &amp;mut var</code></p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">x</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;junmajinlong&quot;</span>);</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">x_ref</span> = &amp;<span class="keyword">mut</span> x;  <span class="comment">// 借用s的可写权</span></span><br><span class="line">  x_ref.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;.com&quot;</span>);</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, x);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">  <span class="title function_ invoke__">f1</span>(&amp;<span class="keyword">mut</span> s);   <span class="comment">// 借用s的可写权</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, s);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">f1</span>(s: &amp;<span class="keyword">mut</span> <span class="type">String</span>)&#123;</span><br><span class="line">  s.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;world&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<h2 id="2-数组"><a href="#2-数组" class="headerlink" title="2 数组"></a>2 数组</h2><ul>
+<li>Rust中的数组是一段连续的内存区域，可以存储同一类型的数据。</li>
+<li>数组有固定的大小，一旦定义好，就无法改变其大小。</li>
+<li>数组在 Rust中是值类型，在栈中存储。</li>
+<li>数组中的每个元素的类型必须相同。</li>
+</ul>
+<h3 id="2-1-创建和使用数组"><a href="#2-1-创建和使用数组" class="headerlink" title="2.1 创建和使用数组"></a>2.1 创建和使用数组</h3><ol>
+<li>创建数组<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">b</span>:[<span class="type">i32</span>; <span class="number">5</span>] = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]; <span class="comment">// 在方括号中包含每个元素的类型，后跟分号，再后跟数组元素的数量</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>还可以通过在方括号中指定初始值加分号再加元素个数的方式来创建一个每个元素都为相同值的数组：</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">c</span> = [<span class="number">0</span>; <span class="number">5</span>]; <span class="comment">// 数组c中每一项都为0</span></span><br></pre></td></tr></table></figure>
 
+<ol start="2">
+<li>数组元素的访问</li>
+</ol>
+<ul>
+<li>数组是可以在栈 (stack) 上分配的已知固定大小的单个内存块。可以使用索引来访问数组的元素:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;The first element is &#123;&#125;&quot;</span>, a[<span class="number">0</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<ol start="3">
+<li>数组的长度</li>
+</ol>
+<ul>
+<li>Rust 数组有固定的长度，所以可以直接使用 <code>len()</code> 方法来获取数组的长度:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;The array has &#123;&#125; elements.&quot;</span>, a.<span class="title function_ invoke__">len</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>数组元素的修改</li>
+</ol>
+<ul>
+<li>Rust 数组是值类型，所以在函数中修改数组元素的值并返回，需要使用借用和克隆:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="title function_ invoke__">change_array</span>(&amp;<span class="keyword">mut</span> a);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, a);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">b</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">c</span> = b.<span class="title function_ invoke__">to_vec</span>(); <span class="comment">// 克隆数组</span></span><br><span class="line">    <span class="title function_ invoke__">change_array</span>(&amp;<span class="keyword">mut</span> c);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, c);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">change_array</span>(arr: &amp;<span class="keyword">mut</span> [<span class="type">i32</span>]) &#123;</span><br><span class="line">    arr[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-切片"><a href="#3-切片" class="headerlink" title="3 切片"></a>3 切片</h2><ul>
+<li>切片是一段连续的数组的引用，可以对切片进行操作而不必对原始数组进行操作。</li>
+</ul>
+<h3 id="3-1-创建和使用切片"><a href="#3-1-创建和使用切片" class="headerlink" title="3.1 创建和使用切片"></a>3.1 创建和使用切片</h3><ol>
+<li>创建切片</li>
+</ol>
+<ul>
+<li>切片可以通过在方括号中指定开始和结束的索引来创建:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice</span> = &amp;a[<span class="number">1</span>..<span class="number">4</span>]; <span class="comment">// 开始索引为1，结束索引为4</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice2</span> = &amp;a[<span class="number">1</span>..]; <span class="comment">// 等同于 slice1</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice3</span> = &amp;a[..<span class="number">4</span>]; <span class="comment">// 等同于 slice2</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice4</span> = &amp;a[..]; <span class="comment">// 等同于 slice3</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, slice);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>切片的元素的访问</li>
+</ol>
+<ul>
+<li>切片是可以直接使用索引来访问元素的:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">slice</span> = &amp;a[<span class="number">1</span>..<span class="number">4</span>];</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;The second element is &#123;&#125;&quot;</span>, slice[<span class="number">1</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>切片的长度</li>
+</ol>
+<ul>
+<li>Rust 切片有固定的长度，所以可以直接使用 <code>len()</code> 方法来获取切片的长度:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">slice</span> = &amp;a[<span class="number">1</span>..<span class="number">4</span>];</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;The slice has &#123;&#125; elements.&quot;</span>, slice.<span class="title function_ invoke__">len</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>切片元素的修改</li>
+</ol>
+<ul>
+<li>Rust 切片是值类型，所以在函数中修改切片元素的值并返回，需要使用借用和克隆:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="title function_ invoke__">change_slice</span>(&amp;<span class="keyword">mut</span> a[<span class="number">1</span>..<span class="number">4</span>]);</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, a);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> <span class="variable">b</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">c</span> = b.<span class="title function_ invoke__">to_vec</span>(); <span class="comment">// 克隆切片</span></span><br><span class="line">  <span class="title function_ invoke__">change_slice</span>(&amp;<span class="keyword">mut</span> c);</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, c);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">change_slice</span>(slice: &amp;<span class="keyword">mut</span> [<span class="type">i32</span>]) &#123;</span><br><span class="line">  slice[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一个小练习：</p>
+<ul>
+<li>给定一个整数数组nums，返回一个answer，使得返回的answer[i]等于除nums[i]之外nums中每一个元素的乘积。</li>
+<li>示例：</li>
+</ul>
+<blockquote>
+<p>Input: nums &#x3D; [1,2,3,4]<br>Output: [24,12,8,6]  </p>
+</blockquote>
+<blockquote>
+<p>Input: nums &#x3D; [-1,1,0,-3,3]<br>Output: [0,0,9,0,0]  </p>
+</blockquote>
+<ul>
+<li><p>注意：</p>
+</li>
+<li><p>除法取整以后的结果在 <code>[INT_MIN, INT_MAX]</code> 范围内。</p>
+</li>
+<li><p>要求：</p>
+</li>
+<li><p>时间复杂度为 O(n)</p>
+</li>
+<li><p>空间复杂度为 O(1)</p>
+</li>
+</ul>
+<p>解法1:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">get_product_without_element</span>(arr: &amp;[<span class="type">i32</span>], index: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;<span class="type">i32</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt;= arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">       <span class="literal">None</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">mut_product</span> = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">      <span class="keyword">if</span> i == index &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      mut_product *= arr[i];</span><br><span class="line">    &#125;</span><br><span class="line">      <span class="title function_ invoke__">Some</span>(mut_product)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>解法2:</p>
+<pre><code class="rust">fn get_product_without_element(arr: &amp;[i32], index: usize) -&gt; Option&lt;i32&gt; &#123;
+    if index &lt; 0 || index &gt;= arr.len() &#123;
+       None
+    &#125;
+    let total_product = arr.iter().product::&lt;i32&gt;();
+    if arr[index] == 0 &#123;
+      if arr.iter().filter(|&amp;&amp;x| x == 0).count() &gt; 1 &#123;
+        Some(0)
+      &#125; else arr.iter().filter(|&amp;&amp;x| x == 0).count() == 1 &#123;
+        Some(arr.iter().filter(|&amp;&amp;x| x!= 0).product()) 
+      &#125;
+    &#125; else &#123;
+      Some(total_product / arr[index])
+    &#125;
+&#125;
+
+</code></pre>
 
       
     </div>
