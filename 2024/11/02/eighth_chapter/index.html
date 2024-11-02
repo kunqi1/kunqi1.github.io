@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一、返回值 Rust 是一个类型安全的语言，这意味着返回值是由返回值类型来决定的。  Rust 的返回值可以是任何类型，包括 () 空元组，或者是其他任何类型。   1. 解构Option&lt;T&gt; 如果 Option&lt;T&gt; 包含值，返回包含的值。 如果 Option&lt;T&gt; 包含 None，返回 None 值。   一个变量要么有值，要么为空  1234567891">
+<meta property="og:type" content="article">
+<meta property="og:title" content="返回值与错误处理">
+<meta property="og:url" content="http://example.com/2024/11/02/eighth_chapter/index.html">
+<meta property="og:site_name" content="0xkunqil">
+<meta property="og:description" content="一、返回值 Rust 是一个类型安全的语言，这意味着返回值是由返回值类型来决定的。  Rust 的返回值可以是任何类型，包括 () 空元组，或者是其他任何类型。   1. 解构Option&lt;T&gt; 如果 Option&lt;T&gt; 包含值，返回包含的值。 如果 Option&lt;T&gt; 包含 None，返回 None 值。   一个变量要么有值，要么为空  1234567891">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-11-02T14:21:48.000Z">
+<meta property="article:modified_time" content="2024-11-02T16:24:29.746Z">
+<meta property="article:author" content="Kunqi Liu">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2024/11/02/eighth_chapter/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>返回值与错误处理 | 0xkunqil</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">0xkunqil</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">kunqi的技术博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/11/02/eighth_chapter/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kunqi Liu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="0xkunqil">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          返回值与错误处理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-11-02 22:21:48" itemprop="dateCreated datePublished" datetime="2024-11-02T22:21:48+08:00">2024-11-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-11-03 00:24:29" itemprop="dateModified" datetime="2024-11-03T00:24:29+08:00">2024-11-03</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="一、返回值"><a href="#一、返回值" class="headerlink" title="一、返回值"></a>一、返回值</h3><ul>
+<li><p>Rust 是一个类型安全的语言，这意味着返回值是由返回值类型来决定的。</p>
+</li>
+<li><p>Rust 的返回值可以是任何类型，包括 <code>()</code> 空元组，或者是其他任何类型。</p>
+</li>
+</ul>
+<h4 id="1-解构Option"><a href="#1-解构Option" class="headerlink" title="1. 解构Option&lt;T&gt;"></a>1. 解构<code>Option&lt;T&gt;</code></h4><ol>
+<li>如果 <code>Option&lt;T&gt;</code> 包含值，返回包含的值。</li>
+<li>如果 <code>Option&lt;T&gt;</code> 包含 <code>None</code>，返回 <code>None</code> 值。</li>
+</ol>
+<ul>
+<li>一个变量要么有值，要么为空</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">plus_one</span>(x: <span class="type">Option</span>&lt;<span class="type">i32</span>&gt;) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;<span class="type">i32</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">match</span> x &#123;</span><br><span class="line">        <span class="literal">None</span> =&gt; <span class="literal">None</span>,</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(i) =&gt; <span class="title function_ invoke__">Some</span>(i + <span class="number">1</span>),</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">five</span> = <span class="title function_ invoke__">Some</span>(<span class="number">5</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">six</span> = <span class="title function_ invoke__">plus_one</span>(five);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">none</span> = <span class="title function_ invoke__">plus_one</span>(<span class="literal">None</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>plus_one 接受一个 <code>Option&lt;i32&gt;</code> 类型的参数，同时返回一个 <code>Option&lt;i32&gt; </code>类型的值（这种形式的函数在标准库内随处所见），在该函数的内部处理中，如果传入的是一个<code> None</code> ，则返回一个 None 且不做任何处理；如果传入的是一个 <code>Some(i32)</code>，则通过模式绑定，把其中的值绑定到变量 <code>i</code> 上，然后返回 <code>i+1</code> 的值，同时用 <code>Some </code>进行包裹。</li>
+</ul>
+<h5 id="1-1-Option-的一些辅助函数"><a href="#1-1-Option-的一些辅助函数" class="headerlink" title="1.1 Option&lt;T&gt; 的一些辅助函数"></a>1.1 <code>Option&lt;T&gt;</code> 的一些辅助函数</h5><ol>
+<li><code>unwrap</code>：返回 <code>Option&lt;T&gt;</code> 包含的值，如果 <code>Option&lt;T&gt;</code> 为空，返回 <code>panic</code>。</li>
+</ol>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">p1</span> = s.<span class="title function_ invoke__">pop</span>().<span class="title function_ invoke__">unwrap</span>(); <span class="comment">// 返回Option&lt;char&gt;</span></span><br><span class="line">    <span class="comment">// 如果能够明确值存在，可以使用unwrap()</span></span><br><span class="line">    <span class="comment">// 有值的时候会取值，没值的时候panic</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, p1); <span class="comment">// 输出 ‘o’</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>使用<code>is_some</code> 和 <code>is_none</code> ：返回 <code>bool</code> 值，判断 <code>Option&lt;T&gt;</code> 包含值或者为空。</li>
+</ol>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">v</span> = [<span class="number">10</span>, <span class="number">40</span>, <span class="number">30</span>];</span><br><span class="line">    <span class="keyword">if</span> v.<span class="title function_ invoke__">get</span>(<span class="number">1</span>).<span class="title function_ invoke__">is_some</span>() &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;The value at index 1 is: &#123;&#125;&quot;</span>, v[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li><code>unwrap_or</code> ：返回 <code>Option&lt;T&gt;</code> 包含的值，如果 <code>Option&lt;T&gt;</code> 为空，返回一个提供的默认值</li>
+</ol>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">div</span>(a: <span class="type">i32</span>, b: <span class="type">i32</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;<span class="type">f64</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> b != <span class="number">0</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(a <span class="keyword">as</span> <span class="type">f64</span> / b <span class="keyword">as</span> <span class="type">f64</span>)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="literal">None</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">b</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">result</span> = <span class="title function_ invoke__">div</span>(a, b).<span class="title function_ invoke__">unwrap_or</span>(<span class="number">0.0</span>);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, result);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>输出 0.0</p>
+</blockquote>
+<h3 id="二、错误处理"><a href="#二、错误处理" class="headerlink" title="二、错误处理"></a>二、错误处理</h3><ul>
+<li><p>错误对于软件来说是不可避免的，因此一门优秀的编程语言必须有其完整的错误处理哲学。在很多情况下，Rust 需要你承认自己的代码可能会出错，并提前采取行动，来处理这些错误。</p>
+</li>
+<li><p>Rust 中的错误主要分为两类：</p>
+</li>
+</ul>
+<ol>
+<li>可恢复错误，通常用于从系统全局角度来看可以接受的错误，例如处理用户的访问、操作等错误，这些错误只会影响某个用户自身的操作进程，而不会对系统的全局稳定性产生影响</li>
+<li>不可恢复错误，刚好相反，该错误通常是全局性或者系统性的错误，例如数组越界访问，系统启动时发生了影响启动流程的错误等等，这些错误的影响往往对于系统来说是致命的</li>
+</ol>
+<ul>
+<li>很多编程语言，并不会区分这些错误，而是直接采用异常的方式去处理。Rust 没有异常，但是 Rust 也有自己的卧龙凤雏：<code>Result&lt;T, E&gt; </code>用于可恢复错误，<code>panic! </code>用于不可恢复错误。</li>
+</ul>
+<h4 id="1-panic！"><a href="#1-panic！" class="headerlink" title="1. panic！"></a>1. panic！</h4><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">v</span> = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line"></span><br><span class="line">    v[<span class="number">99</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在上面的代码中，Rust 编译器会在 <code>v[99]</code> 这行代码中 panic，并在 panic 发生时终止程序。</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ cargo run</span><br><span class="line">   Compiling panic v0.<span class="number">1.0</span> (file:<span class="comment">///projects/panic)</span></span><br><span class="line">    Finished dev [unoptimized + debuginfo] <span class="title function_ invoke__">target</span>(s) <span class="keyword">in</span> <span class="number">0.27</span>s</span><br><span class="line">     Running `target/debug/panic`</span><br><span class="line">thread <span class="symbol">&#x27;main</span>&#x27; panicked at <span class="symbol">&#x27;index</span> out of bounds: the len is <span class="number">3</span> but the index is <span class="number">99</span>&#x27;, src/main.rs:<span class="number">4</span>:<span class="number">5</span></span><br><span class="line">note: run with `RUST_BACKTRACE=<span class="number">1</span>` environment variable to display a backtrace</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h5 id="1-1-主动调用"><a href="#1-1-主动调用" class="headerlink" title="1.1 主动调用"></a>1.1 主动调用</h5><ol>
+<li><code>panic!</code> ：在代码中主动 panic，可以传递一个字符串作为 panic 的消息。</li>
+</ol>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="built_in">panic!</span>(<span class="string">&quot;crash and burn&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>运行后输出:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">thread <span class="symbol">&#x27;main</span>&#x27; panicked at <span class="symbol">&#x27;crash</span> and burn&#x27;, src/main.rs:<span class="number">2</span>:<span class="number">5</span></span><br><span class="line">note: run with `RUST_BACKTRACE=<span class="number">1</span>` environment variable to display a backtrace</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用 <code>RUST_BACKTRACE=1 cargo run</code>，可以看调用栈</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">thread <span class="symbol">&#x27;main</span>&#x27; panicked at <span class="symbol">&#x27;index</span> out of bounds: the len is <span class="number">3</span> but the index is <span class="number">99</span>&#x27;, src/main.rs:<span class="number">4</span>:<span class="number">5</span></span><br><span class="line">stack backtrace:</span><br><span class="line">   <span class="number">0</span>: rust_begin_unwind</span><br><span class="line">             at /rustc/<span class="number">59</span>eed8a2aac0230a8b53e89d4e99d55912ba6b35/library/std/src/panicking.rs:<span class="number">517</span>:<span class="number">5</span></span><br><span class="line">   <span class="number">1</span>: core::panicking::panic_fmt</span><br><span class="line">             at /rustc/<span class="number">59</span>eed8a2aac0230a8b53e89d4e99d55912ba6b35/library/core/src/panicking.rs:<span class="number">101</span>:<span class="number">14</span></span><br><span class="line">   <span class="number">2</span>: core::panicking::panic_bounds_check</span><br><span class="line">             at /rustc/<span class="number">59</span>eed8a2aac0230a8b53e89d4e99d55912ba6b35/library/core/src/panicking.rs:<span class="number">77</span>:<span class="number">5</span></span><br><span class="line">   <span class="number">3</span>: &lt;<span class="type">usize</span> <span class="keyword">as</span> core::slice::index::SliceIndex&lt;[T]&gt;&gt;::index</span><br><span class="line">             at /rustc/<span class="number">59</span>eed8a2aac0230a8b53e89d4e99d55912ba6b35/library/core/src/slice/index.rs:<span class="number">184</span>:<span class="number">10</span></span><br><span class="line">   <span class="number">4</span>: core::slice::index::&lt;<span class="keyword">impl</span> <span class="title class_">core</span>::ops::index::Index&lt;I&gt; <span class="keyword">for</span> [T]&gt;::index</span><br><span class="line">             at /rustc/<span class="number">59</span>eed8a2aac0230a8b53e89d4e99d55912ba6b35/library/core/src/slice/index.rs:<span class="number">15</span>:<span class="number">9</span></span><br><span class="line">   <span class="number">5</span>: &lt;alloc::vec::<span class="type">Vec</span>&lt;T,A&gt; <span class="keyword">as</span> core::ops::index::Index&lt;I&gt;&gt;::index</span><br><span class="line">             at /rustc/<span class="number">59</span>eed8a2aac0230a8b53e89d4e99d55912ba6b35/library/alloc/src/vec/<span class="keyword">mod</span>.rs:<span class="number">2465</span>:<span class="number">9</span></span><br><span class="line">   <span class="number">6</span>: world_hello::main</span><br><span class="line">             at ./src/main.rs:<span class="number">4</span>:<span class="number">5</span></span><br><span class="line">   <span class="number">7</span>: core::ops::function::<span class="built_in">FnOnce</span>::call_once</span><br><span class="line">             at /rustc/<span class="number">59</span>eed8a2aac0230a8b53e89d4e99d55912ba6b35/library/core/src/ops/function.rs:<span class="number">227</span>:<span class="number">5</span></span><br><span class="line">note: <span class="literal">Some</span> details are omitted, run with `RUST_BACKTRACE=full` <span class="keyword">for</span> <span class="title class_">a</span> verbose backtrace.</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>它包含了函数调用的顺序，当然按照逆序排列：最近调用的函数排在列表的最上方</li>
+</ul>
+<h4 id="2-Result"><a href="#2-Result" class="headerlink" title="2. Result&lt;T, E&gt;"></a>2. Result&lt;T, E&gt;</h4><ul>
+<li>Result 是一个枚举，可以是 Ok(T)，也可以是 Err(E)。</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Result</span>&lt;T, E&gt; &#123;</span><br><span class="line">    <span class="title function_ invoke__">Ok</span>(T),</span><br><span class="line">    <span class="title function_ invoke__">Err</span>(E),</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>我们举一个例子</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">div</span>(a: <span class="type">i32</span>, b: <span class="type">i32</span>) <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">f64</span>, <span class="type">String</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> b != <span class="number">0</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(a <span class="keyword">as</span> <span class="type">f64</span> / b <span class="keyword">as</span> <span class="type">f64</span>)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(<span class="string">&quot;b cannot be zero&quot;</span>.<span class="title function_ invoke__">to_string</span>())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">sqrt</span>(x: <span class="type">f64</span>) <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">f64</span>, <span class="type">String</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> x &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(<span class="string">&quot;x cannot be negative&quot;</span>.<span class="title function_ invoke__">to_string</span>())</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(x.<span class="title function_ invoke__">sqrt</span>())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>我们还可以定义错误的枚举类型</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="title class_">MathError</span> &#123;</span><br><span class="line">    DivisionByZero,</span><br><span class="line">    NegativeNumber,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">div</span>(a: <span class="type">i32</span>, b: <span class="type">i32</span>) <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">f64</span>, MathError&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> b != <span class="number">0</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(a <span class="keyword">as</span> <span class="type">f64</span> / b <span class="keyword">as</span> <span class="type">f64</span>)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(MathError::DivisionByZero)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">sqrt</span>(x: <span class="type">f64</span>) <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">f64</span>, MathError&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> x &lt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(MathError::NegativeNumber)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(x.<span class="title function_ invoke__">sqrt</span>())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>举例子处理Result，以标准库中对文件的处理为例</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::fs::File;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">f</span> = File::<span class="title function_ invoke__">open</span>(<span class="string">&quot;hello.txt&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">f</span> = <span class="keyword">match</span> f &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(file) =&gt; file,</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(error) =&gt; &#123;</span><br><span class="line">            <span class="built_in">panic!</span>(<span class="string">&quot;Error opening file: &#123;:?&#125;&quot;</span>, error);</span><br><span class="line">        &#125;,</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>对返回的错误进行处理</p>
+</li>
+<li><p>我们希望对不同的错误原因采取不同的处理方式</p>
+</li>
+</ul>
+<ol>
+<li>如果 <code>File::open</code> 因为文件不存在而报错，我们希望创建文件并返回新文件的句柄。</li>
+<li>如果 <code>File::open</code> 因为其他的错误而报错，我们希望继续<code>panic！</code>。</li>
+</ol>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::fs::File;</span><br><span class="line"><span class="keyword">use</span> std::io::ErrorKind;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">greeting_file_result</span> = File::<span class="title function_ invoke__">open</span>(<span class="string">&quot;hello.txt&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">greeting_file</span> = <span class="keyword">match</span> greeting_file_result &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(file) =&gt; file,</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(error) =&gt; <span class="keyword">match</span> error.<span class="title function_ invoke__">kind</span>() &#123;</span><br><span class="line">                ErrorKind::NotFound =&gt; <span class="keyword">match</span> File::<span class="title function_ invoke__">create</span>(<span class="string">&quot;hello.txt&quot;</span>) &#123;</span><br><span class="line">                    <span class="title function_ invoke__">Ok</span>(fc) =&gt; fc,</span><br><span class="line">                    <span class="title function_ invoke__">Err</span>(e) =&gt; <span class="built_in">panic!</span>(<span class="string">&quot;Couldn&#x27;t create the file: &#123;&#125;&quot;</span>, e),</span><br><span class="line">                &#125;,</span><br><span class="line">                other_error =&gt; &#123;</span><br><span class="line">                    <span class="built_in">panic!</span>(<span class="string">&quot;Couldn&#x27;t open the file: &#123;&#125;&quot;</span>, error);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">        &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-1-Result-的辅助函数"><a href="#2-1-Result-的辅助函数" class="headerlink" title="2.1 Result&lt;T, E&gt; 的辅助函数"></a>2.1 Result&lt;T, E&gt; 的辅助函数</h5><ol>
+<li><p><code>unwrap()</code> 和 <code>unwrap_or()</code>： <code>unwrap()</code> 用于从 <code>Result&lt;T, E&gt;</code> 中获取 <code>T</code> 值，如果<code>Result</code>为空，则 <code>panic</code>。<code>unwrap_or()</code> 用于从 <code>Result&lt;T, E&gt; </code>中获取 T 值，如果 <code>Result</code> 为空，则返回提供的默认值。</p>
+</li>
+<li><p><code>expect()</code>：<code>expect()</code> 用于从 <code>Result&lt;T, E&gt; </code>中获取 <code>T</code> 值，如果 <code>Result</code> 为空，则 <code>panic</code> 并返回提供的 <code>panic</code> 消息。</p>
+</li>
+<li><p><code>map</code> : 在<code>Result&lt;T,E&gt;</code> 中对 <code>T </code>值进行处理，返回 <code>Result&lt;U, E&gt;</code>。</p>
+</li>
+</ol>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">line</span> = <span class="string">&quot;1\n2\n3\n4\n&quot;</span>;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">num</span> <span class="keyword">in</span> line.<span class="title function_ invoke__">lines</span>() &#123;</span><br><span class="line">        <span class="keyword">match</span> num.parse::&lt;<span class="type">i32</span>&gt;().<span class="title function_ invoke__">map</span>(|i| i * <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="title function_ invoke__">Ok</span>(num) =&gt; <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, num);</span><br><span class="line">            <span class="title function_ invoke__">Err</span>(..) =&gt; &#123;&#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li><code>map_err</code> : 在 <code>Result&lt;T,E&gt;</code> 中对 <code>E</code> 值进行处理，返回 <code>Result&lt;T, F&gt;</code>。</li>
+</ol>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">x</span>() <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;(), <span class="type">String</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">f</span> = File::<span class="title function_ invoke__">open</span>(<span class="string">&quot;hello.txt&quot;</span>).<span class="title function_ invoke__">map_err</span>(|e: std::io::Error| <span class="punctuation">-&gt;</span><span class="type">String</span> &#123;<span class="built_in">format!</span>(<span class="string">&quot;Error opening file: &#123;&#125;&quot;</span>, e)&#125;);</span><br><span class="line">    <span class="keyword">match</span> f &#123;</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(e) =&gt; <span class="title function_ invoke__">Err</span>(e),</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(_) =&gt; <span class="title function_ invoke__">Ok</span>(()),</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<ul>
+<li>在代码运行时，代码是向上层函数传播错误的</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::fs::File;</span><br><span class="line"><span class="keyword">use</span> std::io::&#123;<span class="keyword">self</span>, Read&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">read_username_from_file</span>() <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">String</span>, io::Error&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">f</span> = File::<span class="title function_ invoke__">open</span>(<span class="string">&quot;hello.txt&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">f</span> = <span class="keyword">match</span> f &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(file) =&gt; file,</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(e) =&gt; <span class="keyword">return</span> <span class="title function_ invoke__">Err</span>(e),</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">new</span>();</span><br><span class="line">    <span class="keyword">match</span> f.<span class="title function_ invoke__">read_to_string</span>(&amp;<span class="keyword">mut</span> s) &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(_) =&gt; <span class="title function_ invoke__">Ok</span>(s),</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(e) =&gt; <span class="title function_ invoke__">Err</span>(e),</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>为了简便，传播错误可以使用简写运算符<code>?</code></p>
+</li>
+<li><p>对于<code>Result</code> 如果结果是<code>Ok(T)</code>， 则把<code>T</code>赋值给<code>f</code></p>
+</li>
+<li><p>对于<code>Result</code> 如果结果是<code>Err(E)</code>， 则返回 <code>Err(E)</code></p>
+</li>
+<li><p>对于<code>Option</code>如果值是<code>Some</code>，<code>Some</code>中的值作为表达式的返回值同时函数继续</p>
+</li>
+<li><p>如果值是<code>None</code> 则此时<code>None</code>会从函数中提前返回</p>
+</li>
+<li><p>所以<code>?</code>特别适合用来传播错误</p>
+</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">read_username_from_file</span>() <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">String</span>, io::Error&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">f</span> = File::<span class="title function_ invoke__">open</span>(<span class="string">&quot;hello.txt&quot;</span>)?;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">new</span>();</span><br><span class="line">    f.<span class="title function_ invoke__">read_to_string</span>(&amp;<span class="keyword">mut</span> s)?;</span><br><span class="line">    <span class="title function_ invoke__">Ok</span>(s)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 链式调用</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">f</span> = File::<span class="title function_ invoke__">open</span>(<span class="string">&quot;hello.txt&quot;</span>)?.<span class="title function_ invoke__">read_to_string</span>(&amp;<span class="keyword">mut</span> s)?;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="3-Option-和-Result-之间的转换"><a href="#3-Option-和-Result-之间的转换" class="headerlink" title="3. Option 和 Result&lt;T, E&gt; 之间的转换"></a>3. Option<T> 和 Result&lt;T, E&gt; 之间的转换</h4><ol>
+<li><code>Option&lt;T&gt;</code> 转 <code>Result&lt;T, E&gt;</code>：</li>
+</ol>
+<p><code>ok_or</code>：</p>
+<ul>
+<li><code>Some(t)</code> 转 <code>Ok(t)</code></li>
+<li><code>None</code> 转 <code>Err(e)</code></li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">first</span>(arr:&amp;[<span class="type">i32</span>] <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;&amp;<span class="type">i32</span>, <span class="type">String</span>&gt;) &#123;</span><br><span class="line">    arr.<span class="title function_ invoke__">get</span>(<span class="number">0</span>).<span class="title function_ invoke__">ok_or</span>(<span class="string">&quot;out of bounds&quot;</span>.<span class="title function_ invoke__">to_string</span>())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>err</code>:</p>
+<ul>
+<li><code>Err(e)</code> 转 <code>Some(e)</code></li>
+<li><code>Ok(e)</code> 转 <code>None</code></li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">f</span> = File::<span class="title function_ invoke__">open</span>(<span class="string">&quot;hello.txt&quot;</span>).<span class="title function_ invoke__">err</span>();</span><br><span class="line">    <span class="keyword">if</span> f.<span class="title function_ invoke__">is_some</span>() &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;no file found&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="comment">// 输出 no file found</span></span><br></pre></td></tr></table></figure>
+
+<p><code>ok</code>:</p>
+<ul>
+<li><code>Err(e)</code> 转 <code>None</code></li>
+<li><code>Ok(e)</code> 转 <code>Some(e)</code></li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">f</span> = File::<span class="title function_ invoke__">open</span>(<span class="string">&quot;hello.txt&quot;</span>).<span class="title function_ invoke__">err</span>();</span><br><span class="line">    <span class="keyword">if</span> f.<span class="title function_ invoke__">is_none</span>() &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;no file found&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="comment">// 输出 no file found</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/11/02/Seventh_chapter/" rel="prev" title="Rust基础：结构体">
+      <i class="fa fa-chevron-left"></i> Rust基础：结构体
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="nav-number">1.</span> <span class="nav-text">一、返回值</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%A7%A3%E6%9E%84Option"><span class="nav-number">1.1.</span> <span class="nav-text">1. 解构Option&lt;T&gt;</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-Option-%E7%9A%84%E4%B8%80%E4%BA%9B%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 Option&lt;T&gt; 的一些辅助函数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">二、错误处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-panic%EF%BC%81"><span class="nav-number">2.1.</span> <span class="nav-text">1. panic！</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-%E4%B8%BB%E5%8A%A8%E8%B0%83%E7%94%A8"><span class="nav-number">2.1.1.</span> <span class="nav-text">1.1 主动调用</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Result"><span class="nav-number">2.2.</span> <span class="nav-text">2. Result&lt;T, E&gt;</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-Result-%E7%9A%84%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.1 Result&lt;T, E&gt; 的辅助函数</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-Option-%E5%92%8C-Result-%E4%B9%8B%E9%97%B4%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="nav-number">2.3.</span> <span class="nav-text">3. Option 和 Result&lt;T, E&gt; 之间的转换</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Kunqi Liu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Kunqi Liu</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
