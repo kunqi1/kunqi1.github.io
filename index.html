@@ -171,7 +171,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2024-11-03 00:29:41 / Modified: 00:53:44" itemprop="dateCreated datePublished" datetime="2024-11-03T00:29:41+08:00">2024-11-03</time>
+              <time title="Created: 2024-11-03 00:29:41 / Modified: 18:32:07" itemprop="dateCreated datePublished" datetime="2024-11-03T00:29:41+08:00">2024-11-03</time>
             </span>
 
           
@@ -272,7 +272,50 @@
 <li>所有模块均定义在同一个文件中</li>
 <li>类似上述代码中所做的，使用模块，我们就能将功能相关的代码组织到一起，然后通过一个模块名称来说明这些代码为何被组织在一起。这样其它程序员在使用你的模块时，就可以更快地理解和上手。</li>
 </ol>
-<h4 id="1-4-路径"><a href="#1-4-路径" class="headerlink" title="1.4 路径"></a>1.4 路径</h4><h4 id="1-5-使用use-关键字来引入模块"><a href="#1-5-使用use-关键字来引入模块" class="headerlink" title="1.5 使用use 关键字来引入模块"></a>1.5 使用use 关键字来引入模块</h4><h4 id="1-6-as-关键字来重新定义模块名"><a href="#1-6-as-关键字来重新定义模块名" class="headerlink" title="1.6 as 关键字来重新定义模块名"></a>1.6 as 关键字来重新定义模块名</h4><h4 id="1-7-代码可见性"><a href="#1-7-代码可见性" class="headerlink" title="1.7 代码可见性"></a>1.7 代码可见性</h4>
+<h4 id="1-4-路径"><a href="#1-4-路径" class="headerlink" title="1.4 路径"></a>1.4 路径</h4><ul>
+<li><p>Rust当中路径访问使用<code>::</code>来访问</p>
+</li>
+<li><p>Rust当中所有的定义默认是私有的，只有在模块内可以被访问，如果需要在外部使用，可以加上<code>pub</code>关键字</p>
+</li>
+<li><p>绝对路径访问：<code>crate::front_of_house::hosting::add_to_waitlist()</code></p>
+</li>
+<li><p>相对路径访问：<code>super::add_to_waitlist()</code></p>
+</li>
+<li><p><code>super</code> 关键字可以跳转到上一级模块</p>
+</li>
+<li><p>相对路径可以用<code>self</code>来表示当前模块，<code>super</code>来表示上一级模块</p>
+</li>
+</ul>
+<h4 id="1-5-使用-use-关键字来引入模块"><a href="#1-5-使用-use-关键字来引入模块" class="headerlink" title="1.5 使用 use 关键字来引入模块"></a>1.5 使用 use 关键字来引入模块</h4><ul>
+<li>如果模块存在嵌套，访问子模块内方法时需要逐级使用<code>::</code>，且方法需要定义为public</li>
+<li>由于每次访问都需要逐级访问，我们可以用<code>use</code>来简化路径:类似alias</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> crate::front_of_house::hosting;</span><br><span class="line"><span class="keyword">use</span> crate::front_of_house::serving;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果a模块有一个方法，子模块b也有一个方法，两个方法是同名方法，以log()为例，可以用<code>as</code>来重新定义方法名</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> a::&#123;b::log <span class="keyword">as</span> log2, log&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同时 <code>as</code>也可以作为类型转换语句</li>
+</ul>
+<h4 id="1-6-模块可见性"><a href="#1-6-模块可见性" class="headerlink" title="1.6 模块可见性"></a>1.6 模块可见性</h4><ul>
+<li>private（default）</li>
+<li>pub(crate)</li>
+<li>pub(in path)</li>
+<li>pub use</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">pub</span>(<span class="keyword">in</span> crate::front_of_house) <span class="keyword">fn</span> <span class="title function_">seat_at_table</span>() &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>只有在 crate::front_of_house 路径下可以访问 seat_at_table() 方法</li>
+<li>pub use 关键字可以将模块中的项公开到外面</li>
+</ul>
+<h4 id="1-7-workspace"><a href="#1-7-workspace" class="headerlink" title="1.7 workspace"></a>1.7 workspace</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// Cargo.toml</span><br><span class="line">[workspace]</span><br><span class="line">members = [</span><br><span class="line">    &quot;my-project&quot;,</span><br><span class="line">    &quot;my-lib&quot;,</span><br><span class="line">    &quot;my-lib/my-sublib&quot;,</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Cargo.toml 里面的 members 是一个数组，包含了需要构建的多个 Package。</li>
+</ul>
+
       
     </div>
 
