@@ -22,26 +22,26 @@
 
   <meta property="og:type" content="website">
 <meta property="og:title" content="0xkunqil">
-<meta property="og:url" content="http://example.com/archives/index.html">
+<meta property="og:url" content="http://example.com/page/2/index.html">
 <meta property="og:site_name" content="0xkunqil">
 <meta property="og:locale" content="en_US">
 <meta property="article:author" content="Kunqi Liu">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/archives/">
+<link rel="canonical" href="http://example.com/page/2/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : false,
+    isHome : true,
     isPost : false,
     lang   : 'en'
   };
 </script>
 
-  <title>Archive | 0xkunqil</title>
+  <title>0xkunqil</title>
   
 
 
@@ -140,233 +140,134 @@
         <div class="content-wrap">
           
 
-          <div class="content archive">
+          <div class="content index posts-expand">
             
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/10/18/First_chapter/">
 
-  
-  
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <span class="collection-header">Um..! 11 posts in total. Keep on posting.</span>
-      </div>
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kunqi Liu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="0xkunqil">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/10/18/First_chapter/" class="post-title-link" itemprop="url">Rust 基础</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-10-18 22:48:03" itemprop="dateCreated datePublished" datetime="2024-10-18T22:48:03+08:00">2024-10-18</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <span class="collection-header">2024</span>
+          <h2 id="1-Rust-简介"><a href="#1-Rust-简介" class="headerlink" title="1 Rust 简介"></a>1 Rust 简介</h2><ul>
+<li>是一种通用编译型编程语言，支持函数式、并发式、过程式及面向对象编程</li>
+<li>内存安全，不允许空指针和悬空指针</li>
+<li>静态编译</li>
+<li>并发安全</li>
+<li>可构建多种领域应用：命令行、WebAssembly、网络、嵌入式</li>
+</ul>
+<h2 id="2-环境搭建"><a href="#2-环境搭建" class="headerlink" title="2 环境搭建"></a>2 环境搭建</h2><h3 id="2-1-MacOS下载"><a href="#2-1-MacOS下载" class="headerlink" title="2.1 MacOS下载"></a>2.1 MacOS下载</h3><blockquote>
+<p>curl –proto ‘&#x3D;https’ –tlsv1.2 -sSf <a target="_blank" rel="noopener" href="https://sh.rustup.rs/">https://sh.rustup.rs</a> | sh</p>
+</blockquote>
+<ul>
+<li>下载需联网，出问题挂个代理能解决</li>
+<li>下载完成后需要配置环境变量</li>
+</ul>
+<blockquote>
+<p>source $HOME&#x2F;.cargo&#x2F;env</p>
+</blockquote>
+<ul>
+<li>卸载rust可通过rustup进行卸载</li>
+</ul>
+<blockquote>
+<p>rustup self uninstall</p>
+</blockquote>
+<h3 id="2-2-Vscode-配置插件"><a href="#2-2-Vscode-配置插件" class="headerlink" title="2.2 Vscode 配置插件"></a>2.2 Vscode 配置插件</h3><ol>
+<li>语言插件 rust-analyzar</li>
+<li>even-better-toml 支持toml完整特性</li>
+<li>crates-io或者Dependi 包管理工具</li>
+</ol>
+<h2 id="3-Hello-World"><a href="#3-Hello-World" class="headerlink" title="3 Hello World"></a>3 Hello World</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Hello World!&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>rustc main.rs  生成可执行文件 main</p>
+</blockquote>
+<blockquote>
+<p>运行.&#x2F;main</p>
+</blockquote>
+<h2 id="4-认识Cargo"><a href="#4-认识Cargo" class="headerlink" title="4 认识Cargo"></a>4 认识Cargo</h2><p>Cargo 是 Rust 的官方构建系统和包管理器。它主要有两个作用：</p>
+<ol>
+<li><p>项目管理：Cargo 用于创建、构建和管理 Rust 项目。</p>
+</li>
+<li><p>包管理器：Cargo 还充当了 Rust 的包管理器。它允许开发者在项目中引入和管理依赖项（如第三方库），并确保这些依赖项的版本管理和兼容性。</p>
+</li>
+</ol>
+<h3 id="Cargo-主要特性和功能："><a href="#Cargo-主要特性和功能：" class="headerlink" title="Cargo 主要特性和功能："></a>Cargo 主要特性和功能：</h3><ol>
+<li><p>依赖管理：Cargo 通过 Cargo.toml 文件管理项目的依赖，这个文件列出了项目所需的所有外部库以及它们的版本。</p>
+</li>
+<li><p>构建系统：Cargo 使用 Rust 编译器（rustc）来构建项目，它会自动处理依赖的编译和链接。</p>
+</li>
+<li><p>包注册表：Cargo 与 crates.io 这个 Rust 社区的包注册表交互，允许开发者搜索、添加和管理第三方库。</p>
+</li>
+<li><p>构建配置：通过 Cargo.toml 和 Cargo.lock 文件，Cargo 允许开发者配置构建选项，如编译器选项、特性（features）和目标平台。</p>
+</li>
+</ol>
+<h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><blockquote>
+<p>cargo new hello_cargo<br>cd hello_cargo  </p>
+</blockquote>
+<p><img src="/./images/WechatIMG12.png" alt="创建工程目录"></p>
+<ul>
+<li><p>Cargo会输出一个Cargo.lock文件，里面记录了每个库使用的精确的版本。之后构建的时候会直接读取该文件并使用里面的版本。</p>
+</li>
+<li><p>Cargo只有在你希望它更新的时候才会更新新版本，手动修改Cargo.toml里的版本成新的版本号或者运行cargo update。</p>
+</li>
+<li><p>cargo update命令仅仅更新最新的兼容版本，如果你想跨不兼容的版本更新，需要手动修改Cargo.toml，下次构建的时候，Cargo会更新版本和Cargo.lock文件。</p>
+</li>
+</ul>
+
+      
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2024-11-06T18:22:06+08:00"
-              content="2024-11-06">
-          11-06
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2024/11/06/eleventh_chapter/" itemprop="url">
-            <span itemprop="name">Rust基础：生命周期</span>
-          </a>
-      </div>
-
-    </header>
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
   </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2024-11-03T23:09:01+08:00"
-              content="2024-11-03">
-          11-03
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2024/11/03/tenth_chapter/" itemprop="url">
-            <span itemprop="name">Rust基础：智能指针</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2024-11-03T00:29:41+08:00"
-              content="2024-11-03">
-          11-03
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2024/11/03/nineth_chapter/" itemprop="url">
-            <span itemprop="name">Rust基础：模块化</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2024-11-02T22:21:48+08:00"
-              content="2024-11-02">
-          11-02
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2024/11/02/eighth_chapter/" itemprop="url">
-            <span itemprop="name">Rust基础：返回值与错误处理</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2024-11-02T18:17:25+08:00"
-              content="2024-11-02">
-          11-02
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2024/11/02/Seventh_chapter/" itemprop="url">
-            <span itemprop="name">Rust基础：结构体</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2024-10-21T21:37:04+08:00"
-              content="2024-10-21">
-          10-21
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2024/10/21/Sixth_chapter/" itemprop="url">
-            <span itemprop="name">Rust基础：枚举类型和模式匹配</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2024-10-21T20:44:52+08:00"
-              content="2024-10-21">
-          10-21
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2024/10/21/Fifth-chapter/" itemprop="url">
-            <span itemprop="name">Rust基础:字符串</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2024-10-21T19:46:57+08:00"
-              content="2024-10-21">
-          10-21
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2024/10/21/Forth_chapter/" itemprop="url">
-            <span itemprop="name">Rust基础:所有权、引用、数组与切片</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2024-10-19T21:06:32+08:00"
-              content="2024-10-19">
-          10-19
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2024/10/19/Third_chapter/" itemprop="url">
-            <span itemprop="name">Rust基础:函数、流程控制等基本概念</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2024-10-19T10:53:53+08:00"
-              content="2024-10-19">
-          10-19
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2024/10/19/Second_chapter/" itemprop="url">
-            <span itemprop="name">Rust基础:变量和可变类型</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-
-    </div>
-  </div>
   
   
   
+
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/archives/page/2/">2</a><a class="extend next" rel="next" href="/archives/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
   </nav>
 
 
