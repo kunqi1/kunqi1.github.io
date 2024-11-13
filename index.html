@@ -146,6 +146,138 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/11/13/fourteenth/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kunqi Liu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="0xkunqil">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/11/13/fourteenth/" class="post-title-link" itemprop="url">Rust基础：使用消息传递在线程中通信</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-11-13 15:32:44 / Modified: 18:09:41" itemprop="dateCreated datePublished" datetime="2024-11-13T15:32:44+08:00">2024-11-13</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="使用消息传递实现并发"><a href="#使用消息传递实现并发" class="headerlink" title="使用消息传递实现并发"></a>使用消息传递实现并发</h3><ul>
+<li><p>一个日益流行的确保安全并发的方式是 消息传递（message passing），这里线程或 actor 通过发送包含数据的消息来相互沟通。这个思想来源于 Go 编程语言文档中 的口号：“不要通过共享内存来通讯；而是通过通讯来共享内存。”（“Do not communicate by sharing memory; instead, share memory by communicating.”）</p>
+</li>
+<li><p>为了实现消息传递并发，Rust 标准库提供了一个 信道（channel）实现。信道是一个通用编程概念，表示数据从一个线程发送到另一个线程。</p>
+</li>
+<li><p>编程中的信息渠道（信道）有两部分组成，一个发送者（sender）和一个接收者（receiver）。发送者位于上游位置，在这里可以将橡皮鸭放入河中，接收者则位于下游，橡皮鸭最终会漂流至此。代码中的一部分调用发送者的方法以及希望发送的数据，另一部分则检查接收端收到的消息。当发送者或接收者任一被丢弃时可以认为信道被 关闭（closed）了。</p>
+</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::sync::mpsc;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> (tx, rx) = mpsc::<span class="title function_ invoke__">channel</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>创建一个信道，并将其两端赋值给 tx 和 rx, 返回的是一个元组类型</p>
+</li>
+<li><p>这里使用 <code>mpsc::channel</code> 函数创建一个新的信道；mpsc 是 <code>多个生产者，单个消费者（multiple producer, single consumer</code>的缩写。简而言之，Rust 标准库实现信道的方式意味着一个信道可以有多个产生值的 发送（sending）端，但只能有一个消费这些值的 接收（receiving）端。想象一下多条小河小溪最终汇聚成大河：所有通过这些小河发出的东西最后都会来到下游的大河。目前我们以单个生产者开始，但是当示例可以工作后会增加多个生产者。</p>
+</li>
+<li><p><code>mpsc::channel</code> 函数返回一个元组：第一个元素是发送端 – 发送者，而第二个元素是接收端 – 接收者。由于历史原因，tx 和 rx 通常作为 发送者（transmitter）和 接收者（receiver）的缩写，所以这就是我们将用来绑定这两端变量的名字。这里使用了一个 let 语句和模式来解构了此元组。</p>
+</li>
+</ul>
+<p>让我们将发送端移动到一个新建线程中并发送一个字符串，这样新建线程就可以和主线程通讯了：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::sync::mpsc;</span><br><span class="line"><span class="keyword">use</span> std::thread;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> (tx, rx) = mpsc::<span class="title function_ invoke__">channel</span>();</span><br><span class="line"></span><br><span class="line">    thread::<span class="title function_ invoke__">spawn</span>(<span class="keyword">move</span> || &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">val</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hi&quot;</span>);</span><br><span class="line">        tx.<span class="title function_ invoke__">send</span>(val).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>这里再次使用 <code>thread::spawn</code> 来创建一个新线程并使用 <code>move</code> 将 <code>tx</code> 移动到闭包中这样新建线程就拥有 <code>tx</code> 了。新建线程需要拥有信道的发送端以便能向信道发送消息。信道的发送端有一个 <code>send</code> 方法用来获取需要放入信道的值。<code>send</code> 方法返回一个 <code>Result&lt;T, E&gt;</code> 类型，所以如果接收端已经被丢弃了，将没有发送值的目标，所以发送操作会返回错误。在这个例子中，出错的时候调用 <code>unwrap</code> 产生 <code>panic</code>。不过对于一个真实程序，需要合理地处理它。</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">use</span> std::sync::mpsc;</span><br><span class="line"><span class="keyword">use</span> std::thread;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> (tx, rx) = mpsc::<span class="title function_ invoke__">channel</span>();</span><br><span class="line"></span><br><span class="line">    thread::<span class="title function_ invoke__">spawn</span>(<span class="keyword">move</span> || &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">val</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hi&quot;</span>);</span><br><span class="line">        tx.<span class="title function_ invoke__">send</span>(val).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">received</span> = rx.<span class="title function_ invoke__">recv</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Got: &#123;received&#125;&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>信道的接收者有两个有用的方法：<code>recv</code> 和 <code>try_recv</code>。这里，我们使用了 <code>recv</code>，它是 <code>receive</code> 的缩写。这个方法会阻塞主线程执行直到从信道中接收一个值。一旦发送了一个值，<code>recv</code> 会在一个 <code>Result&lt;T, E&gt;</code> 中返回它。当信道发送端关闭，<code>recv</code> 会返回一个错误表明不会再有新的值到来了。</p>
+</li>
+<li><p><code>try_recv</code> 不会阻塞，相反它立刻返回一个 <code>Result&lt;T, E&gt;</code>：Ok 值包含可用的信息，而 Err 值代表此时没有任何消息。如果线程在等待消息过程中还有其他工作时使用 <code>try_recv</code> 很有用：可以编写一个循环来频繁调用 <code>try_recv</code>，在有可用消息时进行处理，其余时候则处理一会其他工作直到再次检查。</p>
+</li>
+<li><p>出于简单的考虑，这个例子使用了 recv；主线程中除了等待消息之外没有任何其他工作，所以阻塞主线程是合适的。</p>
+</li>
+</ul>
+<p>如果运行代码，我们将会看到主线程打印出这个值：</p>
+<blockquote>
+<p>Got: hi</p>
+</blockquote>
+<h4 id="信道与所有权转移"><a href="#信道与所有权转移" class="headerlink" title="信道与所有权转移"></a>信道与所有权转移</h4><ul>
+<li>所有权规则在消息传递中扮演了重要角色，其有助于我们编写安全的并发代码。防止并发编程中的错误是在 Rust 程序中考虑所有权的一大优势。现在让我们做一个试验来看看信道与所有权如何一同协作以避免产生问题：我们将尝试在新建线程中的信道中发送完 val 值 之后 再使用它。</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::sync::mpsc;</span><br><span class="line"><span class="keyword">use</span> std::thread;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> (tx, rx) = mpsc::<span class="title function_ invoke__">channel</span>();</span><br><span class="line"></span><br><span class="line">    thread::<span class="title function_ invoke__">spawn</span>(<span class="keyword">move</span> || &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">val</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hi&quot;</span>);</span><br><span class="line">        tx.<span class="title function_ invoke__">send</span>(val).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;val is &#123;val&#125;&quot;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">received</span> = rx.<span class="title function_ invoke__">recv</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Got: &#123;received&#125;&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>这里尝试在通过 <code>tx.send</code> 发送 <code>val</code> 到信道中之后将其打印出来。允许这么做是一个坏主意：一旦将值发送到另一个线程后，那个线程可能会在我们再次使用它之前就将其修改或者丢弃。其他线程对值可能的修改会由于不一致或不存在的数据而导致错误或意外的结果。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ cargo run</span><br><span class="line">   Compiling message-passing v0.1.0 (file:///projects/message-passing)</span><br><span class="line">error[E0382]: borrow of moved value: `val`</span><br><span class="line">  --&gt; src/main.rs:10:26</span><br><span class="line">   |</span><br><span class="line">8  |         let val = String::from(&quot;hi&quot;);</span><br><span class="line">   |             --- move occurs because `val` has type `String`, which does not implement the `Copy` trait</span><br><span class="line">9  |         tx.send(val).unwrap();</span><br><span class="line">   |                 --- value moved here</span><br><span class="line">10 |         println!(&quot;val is &#123;val&#125;&quot;);</span><br><span class="line">   |                          ^^^^^ value borrowed here after move</span><br><span class="line">   |</span><br><span class="line">   = note: this error originates in the macro `$crate::format_args_nl` which comes from the expansion of the macro `println` (in Nightly builds, run with -Z macro-backtrace for more info)</span><br><span class="line"></span><br><span class="line">For more information about this error, try `rustc --explain E0382`.</span><br><span class="line">error: could not compile `message-passing` (bin &quot;message-passing&quot;) due to 1 previous error</span><br></pre></td></tr></table></figure></li>
+<li>我们的并发错误会造成一个编译时错误。<code>send</code> 函数获取其参数的所有权并移动这个值归接收者所有。这可以防止在发送后再次意外地使用这个值；所有权系统检查一切是否合乎规则。</li>
+</ul>
+<h4 id="发送多个值并观察接收者的等待"><a href="#发送多个值并观察接收者的等待" class="headerlink" title="发送多个值并观察接收者的等待"></a>发送多个值并观察接收者的等待</h4><ul>
+<li>新建线程现在会发送多个消息并在每个消息之间暂停一秒钟。</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::sync::mpsc;</span><br><span class="line"><span class="keyword">use</span> std::thread;</span><br><span class="line"><span class="keyword">use</span> std::time::Duration;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> (tx, rx) = mpsc::<span class="title function_ invoke__">channel</span>();</span><br><span class="line"></span><br><span class="line">    thread::<span class="title function_ invoke__">spawn</span>(<span class="keyword">move</span> || &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">vals</span> = <span class="built_in">vec!</span>[</span><br><span class="line">            <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hi&quot;</span>),</span><br><span class="line">            <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;from&quot;</span>),</span><br><span class="line">            <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;the&quot;</span>),</span><br><span class="line">            <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;thread&quot;</span>),</span><br><span class="line">        ];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> <span class="variable">val</span> <span class="keyword">in</span> vals &#123;</span><br><span class="line">            tx.<span class="title function_ invoke__">send</span>(val).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">            thread::<span class="title function_ invoke__">sleep</span>(Duration::<span class="title function_ invoke__">from_secs</span>(<span class="number">1</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> <span class="variable">received</span> <span class="keyword">in</span> rx &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;Got: &#123;received&#125;&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>这一次，在新建线程中有一个字符串 <code>vector</code> 希望发送到主线程。我们遍历它们，单独的发送每一个字符串并通过一个 <code>Duration</code> 值调用 <code>thread::sleep</code> 函数来暂停一秒。</p>
+</li>
+<li><p>在主线程中，不再显式调用 <code>recv</code> 函数：而是将 <code>rx</code> 当作一个迭代器。对于每一个接收到的值，我们将其打印出来。当信道被关闭时，迭代器也将结束。</p>
+</li>
+</ul>
+<p>当运行代码时，将看到如下输出，每一行都会暂停一秒：</p>
+<blockquote>
+<p>Got: hi<br>Got: from<br>Got: the<br>Got: thread  </p>
+</blockquote>
+<ul>
+<li>因为主线程中的 for 循环里并没有任何暂停或等待的代码，所以可以说主线程是在等待从新建线程中接收值。</li>
+</ul>
+<h4 id="通过克隆发送者来创建多个生产者"><a href="#通过克隆发送者来创建多个生产者" class="headerlink" title="通过克隆发送者来创建多个生产者"></a>通过克隆发送者来创建多个生产者</h4><p>之前我们提到了mpsc是 multiple producer, single consumer 的缩写。可以运用 mpsc 来扩展示例:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// --snip--</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> (tx, rx) = mpsc::<span class="title function_ invoke__">channel</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">tx1</span> = tx.<span class="title function_ invoke__">clone</span>();</span><br><span class="line">thread::<span class="title function_ invoke__">spawn</span>(<span class="keyword">move</span> || &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">vals</span> = <span class="built_in">vec!</span>[</span><br><span class="line">        <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hi&quot;</span>),</span><br><span class="line">        <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;from&quot;</span>),</span><br><span class="line">        <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;the&quot;</span>),</span><br><span class="line">        <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;thread&quot;</span>),</span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> <span class="variable">val</span> <span class="keyword">in</span> vals &#123;</span><br><span class="line">        tx1.<span class="title function_ invoke__">send</span>(val).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">        thread::<span class="title function_ invoke__">sleep</span>(Duration::<span class="title function_ invoke__">from_secs</span>(<span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">thread::<span class="title function_ invoke__">spawn</span>(<span class="keyword">move</span> || &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">vals</span> = <span class="built_in">vec!</span>[</span><br><span class="line">        <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;more&quot;</span>),</span><br><span class="line">        <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;messages&quot;</span>),</span><br><span class="line">        <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;for&quot;</span>),</span><br><span class="line">        <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;you&quot;</span>),</span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> <span class="variable">val</span> <span class="keyword">in</span> vals &#123;</span><br><span class="line">        tx.<span class="title function_ invoke__">send</span>(val).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">        thread::<span class="title function_ invoke__">sleep</span>(Duration::<span class="title function_ invoke__">from_secs</span>(<span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> <span class="variable">received</span> <span class="keyword">in</span> rx &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Got: &#123;received&#125;&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// --snip--</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>这一次，在创建新线程之前，我们对发送者调用了 clone 方法。这会给我们一个可以传递给第一个新建线程的发送端句柄。我们会将原始的信道发送端传递给第二个新建线程。这样就会有两个线程，每个线程将向信道的接收端发送不同的消息。</li>
+</ul>
+<p>会看到这样的输出：</p>
+<blockquote>
+<p>Got: hi<br>Got: more<br>Got: from<br>Got: messages<br>Got: for<br>Got: the<br>Got: thread<br>Got: you  </p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2024/11/11/thirteenth/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1637,222 +1769,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2024/10/21/Forth_chapter/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Kunqi Liu">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="0xkunqil">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2024/10/21/Forth_chapter/" class="post-title-link" itemprop="url">Rust基础:所有权、引用、数组与切片</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-              
-
-              <time title="Created: 2024-10-21 19:46:57 / Modified: 20:45:04" itemprop="dateCreated datePublished" datetime="2024-10-21T19:46:57+08:00">2024-10-21</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="1-所有权"><a href="#1-所有权" class="headerlink" title="1 所有权"></a>1 所有权</h2><ul>
-<li>Rust所有权规则可以总结为如下几句话：</li>
-</ul>
-<ol>
-<li>Rust中的每个值都有一个被称为其所有者的变量(即：值的所有者是某个变量)</li>
-<li>值在任一时刻有且只有一个所有者</li>
-<li>当所有者(变量)离开作用域，这个值将被销毁</li>
-</ol>
-<ul>
-<li>这里对第三点做一些补充性的解释，所有者离开作用域会导致值被销毁，这个过程实际上是调用一个名为drop的函数来销毁数据释放内存。在前文解释作用域规则时曾提到过，销毁的数据特指堆栈中的数据，如果变量绑定的值是全局内存区内的数据，则数据不会被销毁。</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello, world!&quot;</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>脱离作用域时，S就会被销毁</li>
-</ul>
-<h3 id="1-1谁是谁的所有者"><a href="#1-1谁是谁的所有者" class="headerlink" title="1.1谁是谁的所有者"></a>1.1谁是谁的所有者</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello, world!&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>多数人可能会误以为变量s是堆中字符串数据hello的所有者，但实际上不是。</p>
-</li>
-<li><p>前面介绍内存的文章中解释过，String字符串的实际数据在堆中，但是String大小不确定，所以在栈中使用一个胖指针结构来表示这个String类型的数据，这个胖指针中的指针指向堆中的String实际数据。也就是说，变量s的值是那个胖指针，而不是堆中的实际数据。</p>
-</li>
-<li><p>因此，变量s是那个胖指针的所有者，而不是堆中实际数据的所有者。</p>
-</li>
-<li><p>但是，由于胖指针是指向堆中数据的，多数时候为了简化理解简化描述方式，也经常会说s是那个堆中实际数据的所有者。</p>
-</li>
-</ul>
-<h3 id="1-2-指针的绑定"><a href="#1-2-指针的绑定" class="headerlink" title="1.2 指针的绑定"></a>1.2 指针的绑定</h3><ul>
-<li>在其他语言中，经常可以看到两个不同的指针指向同一块内存的情况。</li>
-<li>但在Rust中，由于所有权的规则，变量跳出作用域后释放堆中的值，等两个不同指针也相应释放时，就会造成二次释放内存污染。</li>
-<li>所以对于Rust中：<blockquote>
-<p>let s2 &#x3D; s1;</p>
-</blockquote>
-</li>
-</ul>
-<p>直接让s1变成未初始化变量，而将s2绑定在堆内存上，这样就发生了一次所有权的转移。</p>
-<p>所有权移动后修改数据：</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">x</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// x将所有权转移给y，但y无法修改字符串</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">y</span> = x;   </span><br><span class="line">y.<span class="title function_ invoke__">push</span>(<span class="string">&#x27;C&#x27;</span>);  <span class="comment">// 本行报错</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">a</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"><span class="comment">// 虽然a无法修改字符串，但转移所有权后，b可修改字符串</span></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">b</span> = a; </span><br><span class="line">b.<span class="title function_ invoke__">push</span>(<span class="string">&#x27;C&#x27;</span>);   <span class="comment">// 本行不报错</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="1-3-引用和所有权借用"><a href="#1-3-引用和所有权借用" class="headerlink" title="1.3 引用和所有权借用"></a>1.3 引用和所有权借用</h3><ul>
-<li>所有权不仅可以转移(原变量会丢失数据的所有权)，还可以通过引用的方式来借用数据的所有权(borrow ownership)。</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s1</span> = &amp;s; <span class="comment">// 借用</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s2</span> = &amp;s; <span class="comment">// 再次借用</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;, &#123;&#125;, &#123;&#125;&quot;</span>,s, s1, s2);</span><br><span class="line">  &#125;  <span class="comment">// sf2离开，sf1离开，s离开</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><code>&amp;s</code>表示创建变量s的引用，为某个变量创建引用的过程不会转移该变量所拥有的所有权。</p>
-<h3 id="1-4-可变引用和不可变引用的所有权规则"><a href="#1-4-可变引用和不可变引用的所有权规则" class="headerlink" title="1.4 可变引用和不可变引用的所有权规则"></a>1.4 可变引用和不可变引用的所有权规则</h3><p>变量的引用分为可变引用&amp;mut var和不可变引用&amp;var，站在所有权借用的角度来看，可变引用表示的是可变借用，不可变引用表示的是不可变借用。</p>
-<ol>
-<li>不可变借用：借用只读权，不允许修改其引用的数据</li>
-<li>可变引用：借用可写权(包括可读权)，允许修改其引用的数据</li>
-<li>多个不可变引用可共存(可同时读)</li>
-<li>可变引用具有排他性，在有可变引用时，不允许存在该数据的其他可变和不可变引用</li>
-</ol>
-<p>如要使用可变引用去修改数据值，要求：</p>
-<p>var的变量可变，即<code>let mut var = xxx</code><br>var的引用可变，即<code>let varf = &amp;mut var</code></p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">x</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;junmajinlong&quot;</span>);</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">x_ref</span> = &amp;<span class="keyword">mut</span> x;  <span class="comment">// 借用s的可写权</span></span><br><span class="line">  x_ref.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;.com&quot;</span>);</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, x);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">  <span class="title function_ invoke__">f1</span>(&amp;<span class="keyword">mut</span> s);   <span class="comment">// 借用s的可写权</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, s);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">f1</span>(s: &amp;<span class="keyword">mut</span> <span class="type">String</span>)&#123;</span><br><span class="line">  s.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;world&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="2-数组"><a href="#2-数组" class="headerlink" title="2 数组"></a>2 数组</h2><ul>
-<li>Rust中的数组是一段连续的内存区域，可以存储同一类型的数据。</li>
-<li>数组有固定的大小，一旦定义好，就无法改变其大小。</li>
-<li>数组在 Rust中是值类型，在栈中存储。</li>
-<li>数组中的每个元素的类型必须相同。</li>
-</ul>
-<h3 id="2-1-创建和使用数组"><a href="#2-1-创建和使用数组" class="headerlink" title="2.1 创建和使用数组"></a>2.1 创建和使用数组</h3><ol>
-<li>创建数组<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">b</span>:[<span class="type">i32</span>; <span class="number">5</span>] = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]; <span class="comment">// 在方括号中包含每个元素的类型，后跟分号，再后跟数组元素的数量</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<ul>
-<li>还可以通过在方括号中指定初始值加分号再加元素个数的方式来创建一个每个元素都为相同值的数组：</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">c</span> = [<span class="number">0</span>; <span class="number">5</span>]; <span class="comment">// 数组c中每一项都为0</span></span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>数组元素的访问</li>
-</ol>
-<ul>
-<li>数组是可以在栈 (stack) 上分配的已知固定大小的单个内存块。可以使用索引来访问数组的元素:</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;The first element is &#123;&#125;&quot;</span>, a[<span class="number">0</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>数组的长度</li>
-</ol>
-<ul>
-<li>Rust 数组有固定的长度，所以可以直接使用 <code>len()</code> 方法来获取数组的长度:</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;The array has &#123;&#125; elements.&quot;</span>, a.<span class="title function_ invoke__">len</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>数组元素的修改</li>
-</ol>
-<ul>
-<li>Rust 数组是值类型，所以在函数中修改数组元素的值并返回，需要使用借用和克隆:</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="title function_ invoke__">change_array</span>(&amp;<span class="keyword">mut</span> a);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, a);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">b</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">c</span> = b.<span class="title function_ invoke__">to_vec</span>(); <span class="comment">// 克隆数组</span></span><br><span class="line">    <span class="title function_ invoke__">change_array</span>(&amp;<span class="keyword">mut</span> c);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, c);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">change_array</span>(arr: &amp;<span class="keyword">mut</span> [<span class="type">i32</span>]) &#123;</span><br><span class="line">    arr[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="3-切片"><a href="#3-切片" class="headerlink" title="3 切片"></a>3 切片</h2><ul>
-<li>切片是一段连续的数组的引用，可以对切片进行操作而不必对原始数组进行操作。</li>
-</ul>
-<h3 id="3-1-创建和使用切片"><a href="#3-1-创建和使用切片" class="headerlink" title="3.1 创建和使用切片"></a>3.1 创建和使用切片</h3><ol>
-<li>创建切片</li>
-</ol>
-<ul>
-<li>切片可以通过在方括号中指定开始和结束的索引来创建:</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice</span> = &amp;a[<span class="number">1</span>..<span class="number">4</span>]; <span class="comment">// 开始索引为1，结束索引为4</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice2</span> = &amp;a[<span class="number">1</span>..]; <span class="comment">// 等同于 slice1</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice3</span> = &amp;a[..<span class="number">4</span>]; <span class="comment">// 等同于 slice2</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice4</span> = &amp;a[..]; <span class="comment">// 等同于 slice3</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, slice);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ol start="2">
-<li>切片的元素的访问</li>
-</ol>
-<ul>
-<li>切片是可以直接使用索引来访问元素的:</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">slice</span> = &amp;a[<span class="number">1</span>..<span class="number">4</span>];</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;The second element is &#123;&#125;&quot;</span>, slice[<span class="number">1</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>切片的长度</li>
-</ol>
-<ul>
-<li>Rust 切片有固定的长度，所以可以直接使用 <code>len()</code> 方法来获取切片的长度:</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">slice</span> = &amp;a[<span class="number">1</span>..<span class="number">4</span>];</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;The slice has &#123;&#125; elements.&quot;</span>, slice.<span class="title function_ invoke__">len</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ol start="4">
-<li>切片元素的修改</li>
-</ol>
-<ul>
-<li>Rust 切片是值类型，所以在函数中修改切片元素的值并返回，需要使用借用和克隆:</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="title function_ invoke__">change_slice</span>(&amp;<span class="keyword">mut</span> a[<span class="number">1</span>..<span class="number">4</span>]);</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, a);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> <span class="variable">b</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">c</span> = b.<span class="title function_ invoke__">to_vec</span>(); <span class="comment">// 克隆切片</span></span><br><span class="line">  <span class="title function_ invoke__">change_slice</span>(&amp;<span class="keyword">mut</span> c);</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, c);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">change_slice</span>(slice: &amp;<span class="keyword">mut</span> [<span class="type">i32</span>]) &#123;</span><br><span class="line">  slice[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>一个小练习：</p>
-<ul>
-<li>给定一个整数数组nums，返回一个answer，使得返回的answer[i]等于除nums[i]之外nums中每一个元素的乘积。</li>
-<li>示例：</li>
-</ul>
-<blockquote>
-<p>Input: nums &#x3D; [1,2,3,4]<br>Output: [24,12,8,6]  </p>
-</blockquote>
-<blockquote>
-<p>Input: nums &#x3D; [-1,1,0,-3,3]<br>Output: [0,0,9,0,0]  </p>
-</blockquote>
-<ul>
-<li><p>注意：</p>
-</li>
-<li><p>除法取整以后的结果在 <code>[INT_MIN, INT_MAX]</code> 范围内。</p>
-</li>
-<li><p>要求：</p>
-</li>
-<li><p>时间复杂度为 O(n)</p>
-</li>
-<li><p>空间复杂度为 O(1)</p>
-</li>
-</ul>
-<p>解法1:</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">get_product_without_element</span>(arr: &amp;[<span class="type">i32</span>], index: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;<span class="type">i32</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt;= arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">       <span class="literal">None</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">mut_product</span> = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">      <span class="keyword">if</span> i == index &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      mut_product *= arr[i];</span><br><span class="line">    &#125;</span><br><span class="line">      <span class="title function_ invoke__">Some</span>(mut_product)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>解法2:</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">get_product_without_element</span>(arr: &amp;[<span class="type">i32</span>], index: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;<span class="type">i32</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> index &lt; <span class="number">0</span> || index &gt;= arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">       <span class="literal">None</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">total_product</span> = arr.<span class="title function_ invoke__">iter</span>().product::&lt;<span class="type">i32</span>&gt;();</span><br><span class="line">    <span class="keyword">if</span> arr[index] == <span class="number">0</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> arr.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">filter</span>(|&amp;&amp;x| x == <span class="number">0</span>).<span class="title function_ invoke__">count</span>() &gt; <span class="number">1</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(<span class="number">0</span>)</span><br><span class="line">      &#125; <span class="keyword">else</span> arr.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">filter</span>(|&amp;&amp;x| x == <span class="number">0</span>).<span class="title function_ invoke__">count</span>() == <span class="number">1</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(arr.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">filter</span>(|&amp;&amp;x| x!= <span class="number">0</span>).<span class="title function_ invoke__">product</span>()) </span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="title function_ invoke__">Some</span>(total_product / arr[index])</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1922,7 +1838,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>

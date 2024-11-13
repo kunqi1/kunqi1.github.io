@@ -146,6 +146,222 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/10/21/Forth_chapter/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kunqi Liu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="0xkunqil">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/10/21/Forth_chapter/" class="post-title-link" itemprop="url">Rust基础:所有权、引用、数组与切片</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-10-21 19:46:57 / Modified: 20:45:04" itemprop="dateCreated datePublished" datetime="2024-10-21T19:46:57+08:00">2024-10-21</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="1-所有权"><a href="#1-所有权" class="headerlink" title="1 所有权"></a>1 所有权</h2><ul>
+<li>Rust所有权规则可以总结为如下几句话：</li>
+</ul>
+<ol>
+<li>Rust中的每个值都有一个被称为其所有者的变量(即：值的所有者是某个变量)</li>
+<li>值在任一时刻有且只有一个所有者</li>
+<li>当所有者(变量)离开作用域，这个值将被销毁</li>
+</ol>
+<ul>
+<li>这里对第三点做一些补充性的解释，所有者离开作用域会导致值被销毁，这个过程实际上是调用一个名为drop的函数来销毁数据释放内存。在前文解释作用域规则时曾提到过，销毁的数据特指堆栈中的数据，如果变量绑定的值是全局内存区内的数据，则数据不会被销毁。</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello, world!&quot;</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>脱离作用域时，S就会被销毁</li>
+</ul>
+<h3 id="1-1谁是谁的所有者"><a href="#1-1谁是谁的所有者" class="headerlink" title="1.1谁是谁的所有者"></a>1.1谁是谁的所有者</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello, world!&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>多数人可能会误以为变量s是堆中字符串数据hello的所有者，但实际上不是。</p>
+</li>
+<li><p>前面介绍内存的文章中解释过，String字符串的实际数据在堆中，但是String大小不确定，所以在栈中使用一个胖指针结构来表示这个String类型的数据，这个胖指针中的指针指向堆中的String实际数据。也就是说，变量s的值是那个胖指针，而不是堆中的实际数据。</p>
+</li>
+<li><p>因此，变量s是那个胖指针的所有者，而不是堆中实际数据的所有者。</p>
+</li>
+<li><p>但是，由于胖指针是指向堆中数据的，多数时候为了简化理解简化描述方式，也经常会说s是那个堆中实际数据的所有者。</p>
+</li>
+</ul>
+<h3 id="1-2-指针的绑定"><a href="#1-2-指针的绑定" class="headerlink" title="1.2 指针的绑定"></a>1.2 指针的绑定</h3><ul>
+<li>在其他语言中，经常可以看到两个不同的指针指向同一块内存的情况。</li>
+<li>但在Rust中，由于所有权的规则，变量跳出作用域后释放堆中的值，等两个不同指针也相应释放时，就会造成二次释放内存污染。</li>
+<li>所以对于Rust中：<blockquote>
+<p>let s2 &#x3D; s1;</p>
+</blockquote>
+</li>
+</ul>
+<p>直接让s1变成未初始化变量，而将s2绑定在堆内存上，这样就发生了一次所有权的转移。</p>
+<p>所有权移动后修改数据：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">x</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// x将所有权转移给y，但y无法修改字符串</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">y</span> = x;   </span><br><span class="line">y.<span class="title function_ invoke__">push</span>(<span class="string">&#x27;C&#x27;</span>);  <span class="comment">// 本行报错</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">a</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"><span class="comment">// 虽然a无法修改字符串，但转移所有权后，b可修改字符串</span></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">b</span> = a; </span><br><span class="line">b.<span class="title function_ invoke__">push</span>(<span class="string">&#x27;C&#x27;</span>);   <span class="comment">// 本行不报错</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-引用和所有权借用"><a href="#1-3-引用和所有权借用" class="headerlink" title="1.3 引用和所有权借用"></a>1.3 引用和所有权借用</h3><ul>
+<li>所有权不仅可以转移(原变量会丢失数据的所有权)，还可以通过引用的方式来借用数据的所有权(borrow ownership)。</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s1</span> = &amp;s; <span class="comment">// 借用</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s2</span> = &amp;s; <span class="comment">// 再次借用</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;, &#123;&#125;, &#123;&#125;&quot;</span>,s, s1, s2);</span><br><span class="line">  &#125;  <span class="comment">// sf2离开，sf1离开，s离开</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>&amp;s</code>表示创建变量s的引用，为某个变量创建引用的过程不会转移该变量所拥有的所有权。</p>
+<h3 id="1-4-可变引用和不可变引用的所有权规则"><a href="#1-4-可变引用和不可变引用的所有权规则" class="headerlink" title="1.4 可变引用和不可变引用的所有权规则"></a>1.4 可变引用和不可变引用的所有权规则</h3><p>变量的引用分为可变引用&amp;mut var和不可变引用&amp;var，站在所有权借用的角度来看，可变引用表示的是可变借用，不可变引用表示的是不可变借用。</p>
+<ol>
+<li>不可变借用：借用只读权，不允许修改其引用的数据</li>
+<li>可变引用：借用可写权(包括可读权)，允许修改其引用的数据</li>
+<li>多个不可变引用可共存(可同时读)</li>
+<li>可变引用具有排他性，在有可变引用时，不允许存在该数据的其他可变和不可变引用</li>
+</ol>
+<p>如要使用可变引用去修改数据值，要求：</p>
+<p>var的变量可变，即<code>let mut var = xxx</code><br>var的引用可变，即<code>let varf = &amp;mut var</code></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">x</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;junmajinlong&quot;</span>);</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">x_ref</span> = &amp;<span class="keyword">mut</span> x;  <span class="comment">// 借用s的可写权</span></span><br><span class="line">  x_ref.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;.com&quot;</span>);</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, x);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">  <span class="title function_ invoke__">f1</span>(&amp;<span class="keyword">mut</span> s);   <span class="comment">// 借用s的可写权</span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, s);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">f1</span>(s: &amp;<span class="keyword">mut</span> <span class="type">String</span>)&#123;</span><br><span class="line">  s.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;world&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-数组"><a href="#2-数组" class="headerlink" title="2 数组"></a>2 数组</h2><ul>
+<li>Rust中的数组是一段连续的内存区域，可以存储同一类型的数据。</li>
+<li>数组有固定的大小，一旦定义好，就无法改变其大小。</li>
+<li>数组在 Rust中是值类型，在栈中存储。</li>
+<li>数组中的每个元素的类型必须相同。</li>
+</ul>
+<h3 id="2-1-创建和使用数组"><a href="#2-1-创建和使用数组" class="headerlink" title="2.1 创建和使用数组"></a>2.1 创建和使用数组</h3><ol>
+<li>创建数组<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">b</span>:[<span class="type">i32</span>; <span class="number">5</span>] = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]; <span class="comment">// 在方括号中包含每个元素的类型，后跟分号，再后跟数组元素的数量</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>还可以通过在方括号中指定初始值加分号再加元素个数的方式来创建一个每个元素都为相同值的数组：</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">c</span> = [<span class="number">0</span>; <span class="number">5</span>]; <span class="comment">// 数组c中每一项都为0</span></span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>数组元素的访问</li>
+</ol>
+<ul>
+<li>数组是可以在栈 (stack) 上分配的已知固定大小的单个内存块。可以使用索引来访问数组的元素:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;The first element is &#123;&#125;&quot;</span>, a[<span class="number">0</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>数组的长度</li>
+</ol>
+<ul>
+<li>Rust 数组有固定的长度，所以可以直接使用 <code>len()</code> 方法来获取数组的长度:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;The array has &#123;&#125; elements.&quot;</span>, a.<span class="title function_ invoke__">len</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>数组元素的修改</li>
+</ol>
+<ul>
+<li>Rust 数组是值类型，所以在函数中修改数组元素的值并返回，需要使用借用和克隆:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="title function_ invoke__">change_array</span>(&amp;<span class="keyword">mut</span> a);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, a);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">b</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">c</span> = b.<span class="title function_ invoke__">to_vec</span>(); <span class="comment">// 克隆数组</span></span><br><span class="line">    <span class="title function_ invoke__">change_array</span>(&amp;<span class="keyword">mut</span> c);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, c);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">change_array</span>(arr: &amp;<span class="keyword">mut</span> [<span class="type">i32</span>]) &#123;</span><br><span class="line">    arr[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-切片"><a href="#3-切片" class="headerlink" title="3 切片"></a>3 切片</h2><ul>
+<li>切片是一段连续的数组的引用，可以对切片进行操作而不必对原始数组进行操作。</li>
+</ul>
+<h3 id="3-1-创建和使用切片"><a href="#3-1-创建和使用切片" class="headerlink" title="3.1 创建和使用切片"></a>3.1 创建和使用切片</h3><ol>
+<li>创建切片</li>
+</ol>
+<ul>
+<li>切片可以通过在方括号中指定开始和结束的索引来创建:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice</span> = &amp;a[<span class="number">1</span>..<span class="number">4</span>]; <span class="comment">// 开始索引为1，结束索引为4</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice2</span> = &amp;a[<span class="number">1</span>..]; <span class="comment">// 等同于 slice1</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice3</span> = &amp;a[..<span class="number">4</span>]; <span class="comment">// 等同于 slice2</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">slice4</span> = &amp;a[..]; <span class="comment">// 等同于 slice3</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, slice);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>切片的元素的访问</li>
+</ol>
+<ul>
+<li>切片是可以直接使用索引来访问元素的:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">slice</span> = &amp;a[<span class="number">1</span>..<span class="number">4</span>];</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;The second element is &#123;&#125;&quot;</span>, slice[<span class="number">1</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>切片的长度</li>
+</ol>
+<ul>
+<li>Rust 切片有固定的长度，所以可以直接使用 <code>len()</code> 方法来获取切片的长度:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">slice</span> = &amp;a[<span class="number">1</span>..<span class="number">4</span>];</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;The slice has &#123;&#125; elements.&quot;</span>, slice.<span class="title function_ invoke__">len</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>切片元素的修改</li>
+</ol>
+<ul>
+<li>Rust 切片是值类型，所以在函数中修改切片元素的值并返回，需要使用借用和克隆:</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="title function_ invoke__">change_slice</span>(&amp;<span class="keyword">mut</span> a[<span class="number">1</span>..<span class="number">4</span>]);</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, a);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> <span class="variable">b</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">c</span> = b.<span class="title function_ invoke__">to_vec</span>(); <span class="comment">// 克隆切片</span></span><br><span class="line">  <span class="title function_ invoke__">change_slice</span>(&amp;<span class="keyword">mut</span> c);</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, c);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">change_slice</span>(slice: &amp;<span class="keyword">mut</span> [<span class="type">i32</span>]) &#123;</span><br><span class="line">  slice[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一个小练习：</p>
+<ul>
+<li>给定一个整数数组nums，返回一个answer，使得返回的answer[i]等于除nums[i]之外nums中每一个元素的乘积。</li>
+<li>示例：</li>
+</ul>
+<blockquote>
+<p>Input: nums &#x3D; [1,2,3,4]<br>Output: [24,12,8,6]  </p>
+</blockquote>
+<blockquote>
+<p>Input: nums &#x3D; [-1,1,0,-3,3]<br>Output: [0,0,9,0,0]  </p>
+</blockquote>
+<ul>
+<li><p>注意：</p>
+</li>
+<li><p>除法取整以后的结果在 <code>[INT_MIN, INT_MAX]</code> 范围内。</p>
+</li>
+<li><p>要求：</p>
+</li>
+<li><p>时间复杂度为 O(n)</p>
+</li>
+<li><p>空间复杂度为 O(1)</p>
+</li>
+</ul>
+<p>解法1:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">get_product_without_element</span>(arr: &amp;[<span class="type">i32</span>], index: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;<span class="type">i32</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> index &gt;= arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">       <span class="literal">None</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">mut_product</span> = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">      <span class="keyword">if</span> i == index &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      mut_product *= arr[i];</span><br><span class="line">    &#125;</span><br><span class="line">      <span class="title function_ invoke__">Some</span>(mut_product)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>解法2:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">get_product_without_element</span>(arr: &amp;[<span class="type">i32</span>], index: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;<span class="type">i32</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> index &lt; <span class="number">0</span> || index &gt;= arr.<span class="title function_ invoke__">len</span>() &#123;</span><br><span class="line">       <span class="literal">None</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">total_product</span> = arr.<span class="title function_ invoke__">iter</span>().product::&lt;<span class="type">i32</span>&gt;();</span><br><span class="line">    <span class="keyword">if</span> arr[index] == <span class="number">0</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> arr.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">filter</span>(|&amp;&amp;x| x == <span class="number">0</span>).<span class="title function_ invoke__">count</span>() &gt; <span class="number">1</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(<span class="number">0</span>)</span><br><span class="line">      &#125; <span class="keyword">else</span> arr.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">filter</span>(|&amp;&amp;x| x == <span class="number">0</span>).<span class="title function_ invoke__">count</span>() == <span class="number">1</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(arr.<span class="title function_ invoke__">iter</span>().<span class="title function_ invoke__">filter</span>(|&amp;&amp;x| x!= <span class="number">0</span>).<span class="title function_ invoke__">product</span>()) </span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="title function_ invoke__">Some</span>(total_product / arr[index])</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2024/10/19/Third_chapter/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -646,7 +862,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
