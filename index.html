@@ -160,7 +160,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2024/11/14/solana-keygen/" class="post-title-link" itemprop="url">solana-keygen</a>
+            <a href="/2024/11/14/solana-keygen/" class="post-title-link" itemprop="url">solana-keygen recover时，返回不同pubkey的问题</a>
         </h2>
 
         <div class="post-meta">
@@ -169,8 +169,9 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
+              
 
-              <time title="Created: 2024-11-14 13:02:37" itemprop="dateCreated datePublished" datetime="2024-11-14T13:02:37+08:00">2024-11-14</time>
+              <time title="Created: 2024-11-14 13:02:37 / Modified: 13:11:47" itemprop="dateCreated datePublished" datetime="2024-11-14T13:02:37+08:00">2024-11-14</time>
             </span>
 
           
@@ -184,7 +185,87 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          
+          <h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><ul>
+<li>在 Solana 中，使用 solana-keygen 创建的密钥对是基于 BIP-39 标准的种子短语（seed phrase）生成的，但如果你遇到了通过 种子短语 恢复时得到的公钥与原始公钥不一致，可能是因为以下几个原因：</li>
+</ul>
+<ol>
+<li>密钥对的种子派生路径（Derivation Path）</li>
+</ol>
+<ul>
+<li><p>Solana 支持基于种子短语的密钥派生，使用 HD（Hierarchical Deterministic）钱包模型。不同的“派生路径”（derivation path）会影响生成的公钥。一个派生路径决定了如何从种子短语派生出不同的密钥对。</p>
+</li>
+<li><p>默认情况下，solana-keygen 使用 m&#x2F;44’&#x2F;501’ 作为派生路径，符合 BIP-44 标准，并且 501 是 Solana 的 专用币种代码。</p>
+</li>
+<li><p>如果你恢复钱包时使用的派生路径与最初生成钱包时不同，就会得到不同的公钥。</p>
+</li>
+</ul>
+<ol start="2">
+<li>不同的密钥生成工具或库</li>
+</ol>
+<ul>
+<li>如果你用不同的工具（比如 solana-keygen 和其他 HD 钱包库）恢复钱包，可能会因为它们使用了不同的 默认派生路径 或 密钥算法（如 BIP-39 或 BIP-32）而导致不一致的结果。</li>
+</ul>
+<ol start="3">
+<li>错误的恢复过程</li>
+</ol>
+<ul>
+<li><p>确保在恢复时你使用的是正确的种子短语，并且在恢复时没有出现任何错误。即使一个字符错误或顺序错误也会导致完全不同的密钥对和公钥。</p>
+</li>
+<li><p>如何验证和确保公钥一致</p>
+</li>
+<li><p>为了确保通过 种子短语 恢复得到正确的密钥对和公钥，可以检查和统一以下几点：</p>
+</li>
+</ul>
+<ol>
+<li>检查派生路径</li>
+</ol>
+<ul>
+<li><p>确保在恢复时，使用与生成时相同的 派生路径。Solana 默认使用的路径是 m&#x2F;44’&#x2F;501’&#x2F;0’&#x2F;0’，其中：</p>
+</li>
+<li><p>44’：BIP-44 规范</p>
+</li>
+<li><p>501’：Solana 货币类型的硬编码值</p>
+</li>
+<li><p>如果你自己修改了派生路径（或者其他工具使用了不同的派生路径），就会得到不同的密钥。</p>
+</li>
+</ul>
+<ol start="2">
+<li>恢复过程</li>
+</ol>
+<ul>
+<li>使用 solana-keygen 恢复密钥时，可以明确指定派生路径来确保一致性。例如：</li>
+</ul>
+<blockquote>
+<p>solana-keygen recover “prompt:&#x2F;&#x2F;?key&#x3D;0&#x2F;0” –outfile ~&#x2F;my-wallet.json</p>
+</blockquote>
+<ul>
+<li>在上面的命令中，prompt:&#x2F;&#x2F;?key&#x3D;0&#x2F;0 指定了你要恢复的派生路径。</li>
+</ul>
+<ol start="3">
+<li>比较恢复的公钥</li>
+</ol>
+<ul>
+<li>恢复之后，你可以用恢复后的密钥生成公钥，并与原始公钥进行比较：</li>
+</ul>
+<blockquote>
+<p>solana-keygen pubkey ~&#x2F;my-wallet.json</p>
+</blockquote>
+<ul>
+<li>这将显示通过恢复的密钥生成的公钥，与你之前生成的公钥进行比较。</li>
+</ul>
+<ol start="4">
+<li>使用相同的工具和版本</li>
+</ol>
+<ul>
+<li>确保你使用相同的版本和工具来生成和恢复密钥对。如果你在不同的工具或不同版本之间切换，也可能会出现不一致的情况。</li>
+</ul>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><ul>
+<li>如果通过 种子短语 恢复密钥时得到的公钥地址不同，最常见的原因是使用了不同的 派生路径 或 工具&#x2F;版本。</li>
+<li>确保在恢复时指定正确的 派生路径，通常默认是 m&#x2F;44’&#x2F;501’&#x2F;0’&#x2F;0’，并检查使用的工具版本一致性。</li>
+<li>如果有不同的生成方法，必须保证你使用的每个步骤和参数是完全相同的。</li>
+<li>如果仍然有问题，请检查你的恢复过程和工具参数，或者提供更多的上下文以便进一步排查。</li>
+</ul>
+
       
     </div>
 
