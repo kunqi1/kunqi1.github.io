@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Solana 账户模型 在 Solana 上，所有数据都存储在所谓的“帐户”中。 Solana 上的数据组织方式类似 于键值存储，其中数据 库中的每个条目称为“帐户(Account)”。  核心要点 账户最多可存储10MB 数据，这些数据可以由可执行的程序代码或程序状态组成。  账户需要以 SOL 形式存入租金，与存储数据的数量成比例，当账户关闭时，该金额可以 全额退款。  每个帐户都有一个程序“">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Solana 账户与基本交互">
+<meta property="og:url" content="http://example.com/2024/11/14/account-and-interaction/index.html">
+<meta property="og:site_name" content="0xkunqil">
+<meta property="og:description" content="Solana 账户模型 在 Solana 上，所有数据都存储在所谓的“帐户”中。 Solana 上的数据组织方式类似 于键值存储，其中数据 库中的每个条目称为“帐户(Account)”。  核心要点 账户最多可存储10MB 数据，这些数据可以由可执行的程序代码或程序状态组成。  账户需要以 SOL 形式存入租金，与存储数据的数量成比例，当账户关闭时，该金额可以 全额退款。  每个帐户都有一个程序“">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/accounts.png">
+<meta property="og:image" content="http://example.com/images/account-address.png">
+<meta property="og:image" content="http://example.com/images/accountinfo.png">
+<meta property="article:published_time" content="2024-11-14T06:41:06.000Z">
+<meta property="article:modified_time" content="2024-11-14T07:04:58.533Z">
+<meta property="article:author" content="Kunqi Liu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/accounts.png">
+
+<link rel="canonical" href="http://example.com/2024/11/14/account-and-interaction/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Solana 账户与基本交互 | 0xkunqil</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">0xkunqil</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">kunqi的技术博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/11/14/account-and-interaction/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kunqi Liu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="0xkunqil">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Solana 账户与基本交互
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-11-14 14:41:06 / Modified: 15:04:58" itemprop="dateCreated datePublished" datetime="2024-11-14T14:41:06+08:00">2024-11-14</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="Solana-账户模型"><a href="#Solana-账户模型" class="headerlink" title="Solana 账户模型"></a>Solana 账户模型</h3><ul>
+<li>在 Solana 上，所有数据都存储在所谓的“帐户”中。 Solana 上的数据组织方式类似 于键值存储，其中数据 库中的每个条目称为“帐户(Account)”。<br><img src="/./images/accounts.png" alt="账户模型"></li>
+</ul>
+<h4 id="核心要点"><a href="#核心要点" class="headerlink" title="核心要点"></a>核心要点</h4><ol>
+<li><p>账户最多可存储10MB 数据，这些数据可以由可执行的程序代码或程序状态组成。</p>
+</li>
+<li><p>账户需要以 SOL 形式存入租金，与存储数据的数量成比例，当账户关闭时，该金额可以 全额退款。</p>
+</li>
+<li><p>每个帐户都有一个程序“所有者”。 只有拥有帐户的程序可以修改其数据或扣除其lamport 余额。 然而，任何人都可以增加的余额。</p>
+</li>
+<li><p>程序 (智能合约) 是无状态账户，用于存储可执行代码。</p>
+</li>
+<li><p>数据账户是由程序创建的，用于存储和管理程序状态。</p>
+</li>
+<li><p>原生程序是内置程序，包括在 Solana 运行时内。</p>
+</li>
+<li><p>Sysvar 帐户是存储网络集群状态的特殊帐户</p>
+</li>
+</ol>
+<h4 id="账户"><a href="#账户" class="headerlink" title="账户"></a>账户</h4><ul>
+<li><p>每个帐户都可以通过其唯一的地址来识别，用 <code>Ed25519 PublicKey</code> 格式。 你可以将地址的视为账户的唯一标识符。<br><img src="/./images/account-address.png" alt="账户地址"></p>
+</li>
+<li><p>地址是定位相应的链上账户数据的键</p>
+</li>
+</ul>
+<h4 id="账户信息"><a href="#账户信息" class="headerlink" title="账户信息"></a>账户信息</h4><ul>
+<li>帐户有一个 最大大小为 <code>10MB(10 Mega Bytes)</code> ，并且 <code>Solana</code> 上每个帐户上存储的数据有以下结构称为 <code>AccountInfo</code>。</li>
+</ul>
+<p><img src="/./images/accountinfo.png" alt="账户信息"></p>
+<ul>
+<li>每个账户的 AccountInfo 包含以下字段：</li>
+</ul>
+<ol>
+<li><code>data</code>: 存储帐户状态的字节数组。 如果帐户是程序(智能合约)，则存储可执行程序代码。 此字段通常称为<code>“帐户数据”</code>。</li>
+<li><code>executable</code>: 表示帐户是否为程序的布尔标识符。</li>
+<li><code>lamports</code>：账户余额的数字表示方式为 <code>lamports</code>，这是SOL中最小的单位<code>(1 SOL = 10亿 lamports)</code>。</li>
+<li><code>owner</code>：指定哪一个程序的公钥 (程序ID) 拥有该帐户。</li>
+<li>作为<code>Solana</code> 账户模式的一个关键部分，<code>Solana</code> 上的每个账户都有一个指定为“所有者”，特别是一个程序。 只有指定为帐户所有者的程序可以修改帐户中存储的数据或扣除<code>lamport</code>余额。 重要的是虽然只有<code>所有者</code>可以扣除余额，但任何人都可以增加余额。</li>
+</ol>
+<h4 id="原生程序"><a href="#原生程序" class="headerlink" title="原生程序"></a>原生程序</h4><ul>
+<li><p>Solana 包含少数原生程序，这些程序是验证器实现的一部分，并为网络提供了各种核心功能。 你可以这里找到原生程序的完整列表。</p>
+</li>
+<li><p>当在 Solana 上开发自定义程序时，你通常会与两个原生程序交互，即系统程序和 BPF Loader。</p>
+</li>
+</ul>
+<h4 id="系统程序"><a href="#系统程序" class="headerlink" title="系统程序"></a>系统程序</h4><ul>
+<li>默认情况下，所有新账户都属于系统程序。 系统程序执行几项关键任务，例如：</li>
+</ul>
+<ol>
+<li>新账户创建: 只有系统程序可以创建新帐户。</li>
+<li>空间分配: 设置每个帐户数据字节的容量。</li>
+<li>分配程序所有者: 一旦系统程序创建了一个帐户，它可以将指定的程序所有者重新分配到不同的程序帐户。 这是自定义程序如何获取系统程序创建的新账户的所有权。</li>
+<li>在Solana上，“钱包”只是系统程序拥有的帐户。 钱包的 lamport 余额是账户拥有的 SOL金额。</li>
+</ol>
+<h4 id="BPFLoader-程序"><a href="#BPFLoader-程序" class="headerlink" title="BPFLoader 程序"></a>BPFLoader 程序</h4><ul>
+<li>BPF Loader 是指定为网络上所有其他程序的“所有者”的程序，不包括原生程序。 它负责部署、升级和执行自定义程序。</li>
+</ul>
+<h4 id="Sysvar-帐户"><a href="#Sysvar-帐户" class="headerlink" title="Sysvar 帐户"></a>Sysvar 帐户</h4><ul>
+<li>Sysvar账户是位于预定义地址的特殊账户，可以访问集群状态数据。 这些帐户使用网络集群的数据动态更新。 你可以在这里找到 Sysvar 账户的完整列表。</li>
+</ul>
+<h4 id="自定义程序"><a href="#自定义程序" class="headerlink" title="自定义程序"></a>自定义程序</h4><ul>
+<li>在 Solana，“智能合约”称为 programs。 程序是一个包含可执行代码的帐户，由一个设置为真的 “executable” 标志表示。</li>
+</ul>
+<h4 id="程序账户"><a href="#程序账户" class="headerlink" title="程序账户"></a>程序账户</h4><ul>
+<li>当新程序为已部署时， 从技术上讲，Solana 上创建了三个独立的账户：</li>
+</ul>
+<ol>
+<li>程序账户: 代表链上程序的主账户。 此帐户存储可执行数据帐户的地址(存储编译的程序代码)和程序的更新权限(授权地址更改程序)。程序可执行数据帐户:包含可执行文件的帐户程序的字节码。</li>
+<li>缓冲帐户：一个临时帐户，在程序正在部署或升级时存储字节代码。 处理完成后，数据将转入程序可执行数据账户，并关闭缓冲账户。</li>
+</ol>
+<ul>
+<li><p>例如，这里是 Solana 浏览器上的 Token 扩展的程序账户链接及其相应的程序可执行数据帐户。</p>
+</li>
+<li><p>“程序帐户”的地址通常称为“程序ID”，用于调用该程序。</p>
+</li>
+</ul>
+<h4 id="数据帐户"><a href="#数据帐户" class="headerlink" title="数据帐户"></a>数据帐户</h4><ul>
+<li><p>Solana 程序是“无状态”的，这意味着程序帐户只包含程序可执行字节代码。 要存储和修改额外数据，必须创建新的帐户。 这些账户通常称为“数据账户”。</p>
+</li>
+<li><p>数据账户可以存储在所有者程序的代码中定义的任意数据。</p>
+</li>
+<li><p>注意，只有 System Program 可以创建新帐户。 一旦系统程序创建了一个帐户，它就可以将新帐户的所有权转移到另一个程序。</p>
+</li>
+<li><p>换言之，为自定义程序创建数据账户需要两个步骤：</p>
+</li>
+<li><p>调用系统程序来创建一个帐户，然后将所有权转到一个自定义程序</p>
+</li>
+<li><p>调用现在拥有账户的自定义程序，然后初始化程序代码中定义的账户数据</p>
+</li>
+<li><p>这个数据账户创建过程常常是抽象为一步，但是了解基础过程是有用的。</p>
+</li>
+</ul>
+<h4 id="Solana-SDK测试"><a href="#Solana-SDK测试" class="headerlink" title="Solana SDK测试"></a>Solana SDK测试</h4><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// id:C3M8sM1JmSXEn9ubGccBf5VCYMChCUNZFrBcjsQ87hLg</span></span><br><span class="line"><span class="comment">// id2: 3baBhLdkPk9AwG16XWaBd1DrwxLXAnLY7rjxHeL48Kaw</span></span><br><span class="line"><span class="keyword">use</span> solana_client::rpc_client::RpcClient;</span><br><span class="line"><span class="keyword">use</span> solana_sdk::pubkey::Pubkey;</span><br><span class="line"><span class="keyword">use</span> solana_sdk::signature::read_keypair_file;</span><br><span class="line"><span class="keyword">use</span> solana_sdk::signer::Signer;</span><br><span class="line"><span class="keyword">use</span> solana_sdk::system_instruction;</span><br><span class="line"><span class="keyword">use</span> solana_sdk::transaction::Transaction;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> std::<span class="type">str</span>::FromStr;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">rpc_url</span> = <span class="string">&quot;http://127.0.0.1:8899&quot;</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">client</span> = RpcClient::<span class="title function_ invoke__">new</span>(rpc_url);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">sender</span> = <span class="title function_ invoke__">read_keypair_file</span>(<span class="string">&quot;/Users/liukunqi/.config/solana/id.json&quot;</span>).<span class="title function_ invoke__">expect</span>(<span class="string">&quot;read failed&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">receiver</span> = Pubkey::<span class="title function_ invoke__">from_str</span>(<span class="string">&quot;3baBhLdkPk9AwG16XWaBd1DrwxLXAnLY7rjxHeL48Kaw&quot;</span>).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">amount</span> = <span class="number">1_000_000_000</span>; <span class="comment">// 1 sol</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">transfer_instruction</span> = system_instruction::<span class="title function_ invoke__">transfer</span>(&amp;sender.<span class="title function_ invoke__">pubkey</span>(), &amp;receiver, amount);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">recent_blockhash</span> = client.<span class="title function_ invoke__">get_latest_blockhash</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">transaction</span> = Transaction::<span class="title function_ invoke__">new_signed_with_payer</span>(</span><br><span class="line">        &amp;[transfer_instruction], </span><br><span class="line">        <span class="title function_ invoke__">Some</span>(&amp;sender.<span class="title function_ invoke__">pubkey</span>()), </span><br><span class="line">        &amp;[&amp;sender], </span><br><span class="line">        recent_blockhash</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">result</span> = client.<span class="title function_ invoke__">send_and_confirm_transaction</span>(&amp;transaction);</span><br><span class="line">    <span class="keyword">match</span> result &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(signature) =&gt; <span class="built_in">println!</span>(<span class="string">&quot;交易签名：&#123;&#125;&quot;</span>, signature),</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(err) =&gt; <span class="built_in">eprintln!</span>(<span class="string">&quot;Error: &#123;&#125;&quot;</span>, err),</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取账户余额</span></span><br><span class="line">    <span class="keyword">match</span> client.<span class="title function_ invoke__">get_balance</span>(&amp;receiver) &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(balance) =&gt; <span class="built_in">println!</span>(<span class="string">&quot;被转账账户余额：&#123;&#125;&quot;</span>, balance),</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(err) =&gt; <span class="built_in">eprintln!</span>(<span class="string">&quot;Error: &#123;&#125;&quot;</span>, err),</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">match</span> client.<span class="title function_ invoke__">get_balance</span>(&amp;sender.<span class="title function_ invoke__">pubkey</span>()) &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(balance) =&gt; <span class="built_in">println!</span>(<span class="string">&quot;转出账户余额：&#123;&#125;&quot;</span>, balance),</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(err) =&gt; <span class="built_in">eprintln!</span>(<span class="string">&quot;Error: &#123;&#125;&quot;</span>, err),</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>对于以上代码，我们需要先设置好 solana 的网络地址，我们这次在本地部署,先起一个终端，执行</p>
+<blockquote>
+<p>solana-test-validator –reset</p>
+</blockquote>
+</li>
+<li><p>另起一个终端，通过 solana-keygen 创建两个新钱包</p>
+</li>
+</ul>
+<blockquote>
+<p>solana-keygen new -o ~&#x2F;.config&#x2F;solana&#x2F;id.json<br>solana-keygen new -o ~&#x2F;.config&#x2F;solana&#x2F;id2.json</p>
+</blockquote>
+<ul>
+<li><p>id2 输出:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Wrote new keypair to /Users/liukunqi/.config/solana/id2.json</span><br><span class="line">===============================================================================</span><br><span class="line">pubkey: 3baBhLdkPk9AwG16XWaBd1DrwxLXAnLY7rjxHeL48Kaw</span><br><span class="line">===============================================================================</span><br><span class="line">Save this seed phrase and your BIP39 passphrase to recover your new keypair:</span><br><span class="line">worry r***emain*** excit***e jazz a****** reflect excuse cotton venue dose raccoon sense // 模糊处理</span><br><span class="line">===============================================================================</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>我们得到两个钱包的密钥对</p>
+</li>
+<li><p>通过指令可以在钱包之间切换</p>
+</li>
+</ul>
+<blockquote>
+<p>solana config set –keypair ~&#x2F;.config&#x2F;solana&#x2F;id2.json </p>
+</blockquote>
+<ul>
+<li>通过balance指令可以查询余额</li>
+</ul>
+<blockquote>
+<p>solana balance</p>
+</blockquote>
+<ul>
+<li>编译两次后上述事例代码输出</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">交易签名：1zgyPYmzDcyQakR5vazPg9xLZyDaojD2KGRvFCshA1RXVFQbVqfix1fvXbzcAKhdnfAmfnzki6gjBaa1ddcMvfi</span><br><span class="line">被转账账户余额：2000000000</span><br><span class="line">转出账户余额：499999997999990000</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>可以查询到，发生了两次转账行为</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/11/14/solana-keygen/" rel="prev" title="solana-keygen recover时，返回不同pubkey的问题">
+      <i class="fa fa-chevron-left"></i> solana-keygen recover时，返回不同pubkey的问题
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Solana-%E8%B4%A6%E6%88%B7%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">Solana 账户模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E8%A6%81%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">核心要点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B4%A6%E6%88%B7"><span class="nav-number">1.2.</span> <span class="nav-text">账户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B4%A6%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="nav-number">1.3.</span> <span class="nav-text">账户信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8E%9F%E7%94%9F%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.4.</span> <span class="nav-text">原生程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.5.</span> <span class="nav-text">系统程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BPFLoader-%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.6.</span> <span class="nav-text">BPFLoader 程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sysvar-%E5%B8%90%E6%88%B7"><span class="nav-number">1.7.</span> <span class="nav-text">Sysvar 帐户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.8.</span> <span class="nav-text">自定义程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E8%B4%A6%E6%88%B7"><span class="nav-number">1.9.</span> <span class="nav-text">程序账户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%B8%90%E6%88%B7"><span class="nav-number">1.10.</span> <span class="nav-text">数据帐户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Solana-SDK%E6%B5%8B%E8%AF%95"><span class="nav-number">1.11.</span> <span class="nav-text">Solana SDK测试</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Kunqi Liu</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Kunqi Liu</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

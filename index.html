@@ -146,6 +146,196 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/11/14/account-and-interaction/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kunqi Liu">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="0xkunqil">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/11/14/account-and-interaction/" class="post-title-link" itemprop="url">Solana 账户与基本交互</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-11-14 14:41:06 / Modified: 15:04:58" itemprop="dateCreated datePublished" datetime="2024-11-14T14:41:06+08:00">2024-11-14</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Solana-账户模型"><a href="#Solana-账户模型" class="headerlink" title="Solana 账户模型"></a>Solana 账户模型</h3><ul>
+<li>在 Solana 上，所有数据都存储在所谓的“帐户”中。 Solana 上的数据组织方式类似 于键值存储，其中数据 库中的每个条目称为“帐户(Account)”。<br><img src="/./images/accounts.png" alt="账户模型"></li>
+</ul>
+<h4 id="核心要点"><a href="#核心要点" class="headerlink" title="核心要点"></a>核心要点</h4><ol>
+<li><p>账户最多可存储10MB 数据，这些数据可以由可执行的程序代码或程序状态组成。</p>
+</li>
+<li><p>账户需要以 SOL 形式存入租金，与存储数据的数量成比例，当账户关闭时，该金额可以 全额退款。</p>
+</li>
+<li><p>每个帐户都有一个程序“所有者”。 只有拥有帐户的程序可以修改其数据或扣除其lamport 余额。 然而，任何人都可以增加的余额。</p>
+</li>
+<li><p>程序 (智能合约) 是无状态账户，用于存储可执行代码。</p>
+</li>
+<li><p>数据账户是由程序创建的，用于存储和管理程序状态。</p>
+</li>
+<li><p>原生程序是内置程序，包括在 Solana 运行时内。</p>
+</li>
+<li><p>Sysvar 帐户是存储网络集群状态的特殊帐户</p>
+</li>
+</ol>
+<h4 id="账户"><a href="#账户" class="headerlink" title="账户"></a>账户</h4><ul>
+<li><p>每个帐户都可以通过其唯一的地址来识别，用 <code>Ed25519 PublicKey</code> 格式。 你可以将地址的视为账户的唯一标识符。<br><img src="/./images/account-address.png" alt="账户地址"></p>
+</li>
+<li><p>地址是定位相应的链上账户数据的键</p>
+</li>
+</ul>
+<h4 id="账户信息"><a href="#账户信息" class="headerlink" title="账户信息"></a>账户信息</h4><ul>
+<li>帐户有一个 最大大小为 <code>10MB(10 Mega Bytes)</code> ，并且 <code>Solana</code> 上每个帐户上存储的数据有以下结构称为 <code>AccountInfo</code>。</li>
+</ul>
+<p><img src="/./images/accountinfo.png" alt="账户信息"></p>
+<ul>
+<li>每个账户的 AccountInfo 包含以下字段：</li>
+</ul>
+<ol>
+<li><code>data</code>: 存储帐户状态的字节数组。 如果帐户是程序(智能合约)，则存储可执行程序代码。 此字段通常称为<code>“帐户数据”</code>。</li>
+<li><code>executable</code>: 表示帐户是否为程序的布尔标识符。</li>
+<li><code>lamports</code>：账户余额的数字表示方式为 <code>lamports</code>，这是SOL中最小的单位<code>(1 SOL = 10亿 lamports)</code>。</li>
+<li><code>owner</code>：指定哪一个程序的公钥 (程序ID) 拥有该帐户。</li>
+<li>作为<code>Solana</code> 账户模式的一个关键部分，<code>Solana</code> 上的每个账户都有一个指定为“所有者”，特别是一个程序。 只有指定为帐户所有者的程序可以修改帐户中存储的数据或扣除<code>lamport</code>余额。 重要的是虽然只有<code>所有者</code>可以扣除余额，但任何人都可以增加余额。</li>
+</ol>
+<h4 id="原生程序"><a href="#原生程序" class="headerlink" title="原生程序"></a>原生程序</h4><ul>
+<li><p>Solana 包含少数原生程序，这些程序是验证器实现的一部分，并为网络提供了各种核心功能。 你可以这里找到原生程序的完整列表。</p>
+</li>
+<li><p>当在 Solana 上开发自定义程序时，你通常会与两个原生程序交互，即系统程序和 BPF Loader。</p>
+</li>
+</ul>
+<h4 id="系统程序"><a href="#系统程序" class="headerlink" title="系统程序"></a>系统程序</h4><ul>
+<li>默认情况下，所有新账户都属于系统程序。 系统程序执行几项关键任务，例如：</li>
+</ul>
+<ol>
+<li>新账户创建: 只有系统程序可以创建新帐户。</li>
+<li>空间分配: 设置每个帐户数据字节的容量。</li>
+<li>分配程序所有者: 一旦系统程序创建了一个帐户，它可以将指定的程序所有者重新分配到不同的程序帐户。 这是自定义程序如何获取系统程序创建的新账户的所有权。</li>
+<li>在Solana上，“钱包”只是系统程序拥有的帐户。 钱包的 lamport 余额是账户拥有的 SOL金额。</li>
+</ol>
+<h4 id="BPFLoader-程序"><a href="#BPFLoader-程序" class="headerlink" title="BPFLoader 程序"></a>BPFLoader 程序</h4><ul>
+<li>BPF Loader 是指定为网络上所有其他程序的“所有者”的程序，不包括原生程序。 它负责部署、升级和执行自定义程序。</li>
+</ul>
+<h4 id="Sysvar-帐户"><a href="#Sysvar-帐户" class="headerlink" title="Sysvar 帐户"></a>Sysvar 帐户</h4><ul>
+<li>Sysvar账户是位于预定义地址的特殊账户，可以访问集群状态数据。 这些帐户使用网络集群的数据动态更新。 你可以在这里找到 Sysvar 账户的完整列表。</li>
+</ul>
+<h4 id="自定义程序"><a href="#自定义程序" class="headerlink" title="自定义程序"></a>自定义程序</h4><ul>
+<li>在 Solana，“智能合约”称为 programs。 程序是一个包含可执行代码的帐户，由一个设置为真的 “executable” 标志表示。</li>
+</ul>
+<h4 id="程序账户"><a href="#程序账户" class="headerlink" title="程序账户"></a>程序账户</h4><ul>
+<li>当新程序为已部署时， 从技术上讲，Solana 上创建了三个独立的账户：</li>
+</ul>
+<ol>
+<li>程序账户: 代表链上程序的主账户。 此帐户存储可执行数据帐户的地址(存储编译的程序代码)和程序的更新权限(授权地址更改程序)。程序可执行数据帐户:包含可执行文件的帐户程序的字节码。</li>
+<li>缓冲帐户：一个临时帐户，在程序正在部署或升级时存储字节代码。 处理完成后，数据将转入程序可执行数据账户，并关闭缓冲账户。</li>
+</ol>
+<ul>
+<li><p>例如，这里是 Solana 浏览器上的 Token 扩展的程序账户链接及其相应的程序可执行数据帐户。</p>
+</li>
+<li><p>“程序帐户”的地址通常称为“程序ID”，用于调用该程序。</p>
+</li>
+</ul>
+<h4 id="数据帐户"><a href="#数据帐户" class="headerlink" title="数据帐户"></a>数据帐户</h4><ul>
+<li><p>Solana 程序是“无状态”的，这意味着程序帐户只包含程序可执行字节代码。 要存储和修改额外数据，必须创建新的帐户。 这些账户通常称为“数据账户”。</p>
+</li>
+<li><p>数据账户可以存储在所有者程序的代码中定义的任意数据。</p>
+</li>
+<li><p>注意，只有 System Program 可以创建新帐户。 一旦系统程序创建了一个帐户，它就可以将新帐户的所有权转移到另一个程序。</p>
+</li>
+<li><p>换言之，为自定义程序创建数据账户需要两个步骤：</p>
+</li>
+<li><p>调用系统程序来创建一个帐户，然后将所有权转到一个自定义程序</p>
+</li>
+<li><p>调用现在拥有账户的自定义程序，然后初始化程序代码中定义的账户数据</p>
+</li>
+<li><p>这个数据账户创建过程常常是抽象为一步，但是了解基础过程是有用的。</p>
+</li>
+</ul>
+<h4 id="Solana-SDK测试"><a href="#Solana-SDK测试" class="headerlink" title="Solana SDK测试"></a>Solana SDK测试</h4><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// id:C3M8sM1JmSXEn9ubGccBf5VCYMChCUNZFrBcjsQ87hLg</span></span><br><span class="line"><span class="comment">// id2: 3baBhLdkPk9AwG16XWaBd1DrwxLXAnLY7rjxHeL48Kaw</span></span><br><span class="line"><span class="keyword">use</span> solana_client::rpc_client::RpcClient;</span><br><span class="line"><span class="keyword">use</span> solana_sdk::pubkey::Pubkey;</span><br><span class="line"><span class="keyword">use</span> solana_sdk::signature::read_keypair_file;</span><br><span class="line"><span class="keyword">use</span> solana_sdk::signer::Signer;</span><br><span class="line"><span class="keyword">use</span> solana_sdk::system_instruction;</span><br><span class="line"><span class="keyword">use</span> solana_sdk::transaction::Transaction;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> std::<span class="type">str</span>::FromStr;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">rpc_url</span> = <span class="string">&quot;http://127.0.0.1:8899&quot;</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">client</span> = RpcClient::<span class="title function_ invoke__">new</span>(rpc_url);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">sender</span> = <span class="title function_ invoke__">read_keypair_file</span>(<span class="string">&quot;/Users/liukunqi/.config/solana/id.json&quot;</span>).<span class="title function_ invoke__">expect</span>(<span class="string">&quot;read failed&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">receiver</span> = Pubkey::<span class="title function_ invoke__">from_str</span>(<span class="string">&quot;3baBhLdkPk9AwG16XWaBd1DrwxLXAnLY7rjxHeL48Kaw&quot;</span>).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">amount</span> = <span class="number">1_000_000_000</span>; <span class="comment">// 1 sol</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">transfer_instruction</span> = system_instruction::<span class="title function_ invoke__">transfer</span>(&amp;sender.<span class="title function_ invoke__">pubkey</span>(), &amp;receiver, amount);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">recent_blockhash</span> = client.<span class="title function_ invoke__">get_latest_blockhash</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">transaction</span> = Transaction::<span class="title function_ invoke__">new_signed_with_payer</span>(</span><br><span class="line">        &amp;[transfer_instruction], </span><br><span class="line">        <span class="title function_ invoke__">Some</span>(&amp;sender.<span class="title function_ invoke__">pubkey</span>()), </span><br><span class="line">        &amp;[&amp;sender], </span><br><span class="line">        recent_blockhash</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">result</span> = client.<span class="title function_ invoke__">send_and_confirm_transaction</span>(&amp;transaction);</span><br><span class="line">    <span class="keyword">match</span> result &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(signature) =&gt; <span class="built_in">println!</span>(<span class="string">&quot;交易签名：&#123;&#125;&quot;</span>, signature),</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(err) =&gt; <span class="built_in">eprintln!</span>(<span class="string">&quot;Error: &#123;&#125;&quot;</span>, err),</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取账户余额</span></span><br><span class="line">    <span class="keyword">match</span> client.<span class="title function_ invoke__">get_balance</span>(&amp;receiver) &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(balance) =&gt; <span class="built_in">println!</span>(<span class="string">&quot;被转账账户余额：&#123;&#125;&quot;</span>, balance),</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(err) =&gt; <span class="built_in">eprintln!</span>(<span class="string">&quot;Error: &#123;&#125;&quot;</span>, err),</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">match</span> client.<span class="title function_ invoke__">get_balance</span>(&amp;sender.<span class="title function_ invoke__">pubkey</span>()) &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(balance) =&gt; <span class="built_in">println!</span>(<span class="string">&quot;转出账户余额：&#123;&#125;&quot;</span>, balance),</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(err) =&gt; <span class="built_in">eprintln!</span>(<span class="string">&quot;Error: &#123;&#125;&quot;</span>, err),</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>对于以上代码，我们需要先设置好 solana 的网络地址，我们这次在本地部署,先起一个终端，执行</p>
+<blockquote>
+<p>solana-test-validator –reset</p>
+</blockquote>
+</li>
+<li><p>另起一个终端，通过 solana-keygen 创建两个新钱包</p>
+</li>
+</ul>
+<blockquote>
+<p>solana-keygen new -o ~&#x2F;.config&#x2F;solana&#x2F;id.json<br>solana-keygen new -o ~&#x2F;.config&#x2F;solana&#x2F;id2.json</p>
+</blockquote>
+<ul>
+<li><p>id2 输出:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Wrote new keypair to /Users/liukunqi/.config/solana/id2.json</span><br><span class="line">===============================================================================</span><br><span class="line">pubkey: 3baBhLdkPk9AwG16XWaBd1DrwxLXAnLY7rjxHeL48Kaw</span><br><span class="line">===============================================================================</span><br><span class="line">Save this seed phrase and your BIP39 passphrase to recover your new keypair:</span><br><span class="line">worry r***emain*** excit***e jazz a****** reflect excuse cotton venue dose raccoon sense // 模糊处理</span><br><span class="line">===============================================================================</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>我们得到两个钱包的密钥对</p>
+</li>
+<li><p>通过指令可以在钱包之间切换</p>
+</li>
+</ul>
+<blockquote>
+<p>solana config set –keypair ~&#x2F;.config&#x2F;solana&#x2F;id2.json </p>
+</blockquote>
+<ul>
+<li>通过balance指令可以查询余额</li>
+</ul>
+<blockquote>
+<p>solana balance</p>
+</blockquote>
+<ul>
+<li>编译两次后上述事例代码输出</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">交易签名：1zgyPYmzDcyQakR5vazPg9xLZyDaojD2KGRvFCshA1RXVFQbVqfix1fvXbzcAKhdnfAmfnzki6gjBaa1ddcMvfi</span><br><span class="line">被转账账户余额：2000000000</span><br><span class="line">转出账户余额：499999997999990000</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>可以查询到，发生了两次转账行为</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://example.com/2024/11/14/solana-keygen/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1678,120 +1868,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2024/10/21/Sixth_chapter/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Kunqi Liu">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="0xkunqil">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2024/10/21/Sixth_chapter/" class="post-title-link" itemprop="url">Rust基础：枚举类型和模式匹配</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2024-10-21 21:37:04" itemprop="dateCreated datePublished" datetime="2024-10-21T21:37:04+08:00">2024-10-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-11-02 18:12:59" itemprop="dateModified" datetime="2024-11-02T18:12:59+08:00">2024-11-02</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="1-定义枚举"><a href="#1-定义枚举" class="headerlink" title="1. 定义枚举"></a>1. 定义枚举</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="title class_">Direction</span> &#123;</span><br><span class="line">    North,</span><br><span class="line">    South,</span><br><span class="line">    East,</span><br><span class="line">    West,</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">direction</span>: Direction = Direction::North;</span><br></pre></td></tr></table></figure>
-
-<h4 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h4><p>枚举构造器可以带有具名字段或未具名字段：</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="title class_">Animal</span> &#123;</span><br><span class="line">    <span class="title function_ invoke__">Dog</span>(<span class="type">String</span>, <span class="type">f64</span>),</span><br><span class="line">    Cat &#123; name: <span class="type">String</span>, weight: <span class="type">f64</span> &#125;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">a</span>: Animal = Animal::<span class="title function_ invoke__">Dog</span>(<span class="string">&quot;Cocoa&quot;</span>.<span class="title function_ invoke__">to_string</span>(), <span class="number">37.2</span>);</span><br><span class="line">a = Animal::Cat &#123; name: <span class="string">&quot;Spotty&quot;</span>.<span class="title function_ invoke__">to_string</span>(), weight: <span class="number">2.7</span> &#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>在这个例子中，<code>Cat</code> 是一个类结构体枚举变体<code>(struct-like enum variant)</code>，而<code> Dog</code> 则被简单地称为枚举变体。每个枚举实例都有一个判别值&#x2F;判别式(discriminant)，它是一个与此枚举实例关联的整数，用来确定它持有哪个变体。</li>
-</ul>
-<h4 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h4><ul>
-<li><p><code>match</code> vs <code>if let</code></p>
-</li>
-<li><p><code>match</code> 匹配器可以用来检查枚举的判别值，并执行相应的代码分支,必须匹配所有条件。完整匹配才能编译成功。</p>
-</li>
-<li><p>解构色彩模型例子</p>
-</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 需要 `allow` 来消除警告，因为只使用了枚举类型的一种取值。</span></span><br><span class="line"><span class="meta">#[allow(dead_code)]</span></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Color</span> &#123;</span><br><span class="line">    <span class="comment">// 这三个取值仅由它们的名字（而非类型）来指定。</span></span><br><span class="line">    Red,</span><br><span class="line">    Blue,</span><br><span class="line">    Green,</span><br><span class="line">    <span class="comment">// 这些则把 `u32` 元组赋予不同的名字，以色彩模型命名。</span></span><br><span class="line">    <span class="title function_ invoke__">RGB</span>(<span class="type">u32</span>, <span class="type">u32</span>, <span class="type">u32</span>),</span><br><span class="line">    <span class="title function_ invoke__">HSV</span>(<span class="type">u32</span>, <span class="type">u32</span>, <span class="type">u32</span>),</span><br><span class="line">    <span class="title function_ invoke__">HSL</span>(<span class="type">u32</span>, <span class="type">u32</span>, <span class="type">u32</span>),</span><br><span class="line">    <span class="title function_ invoke__">CMY</span>(<span class="type">u32</span>, <span class="type">u32</span>, <span class="type">u32</span>),</span><br><span class="line">    <span class="title function_ invoke__">CMYK</span>(<span class="type">u32</span>, <span class="type">u32</span>, <span class="type">u32</span>, <span class="type">u32</span>),</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">color</span> = Color::<span class="title function_ invoke__">RGB</span>(<span class="number">122</span>, <span class="number">17</span>, <span class="number">40</span>);</span><br><span class="line">    <span class="comment">// 试一试 ^ 将不同的值赋给 `color`</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;What color is it?&quot;</span>);</span><br><span class="line">    <span class="comment">// 可以使用 `match` 来解构 `enum`。</span></span><br><span class="line">    <span class="keyword">match</span> color &#123;</span><br><span class="line">        Color::Red   =&gt; <span class="built_in">println!</span>(<span class="string">&quot;The color is Red!&quot;</span>),</span><br><span class="line">        Color::Blue  =&gt; <span class="built_in">println!</span>(<span class="string">&quot;The color is Blue!&quot;</span>),</span><br><span class="line">        Color::Green =&gt; <span class="built_in">println!</span>(<span class="string">&quot;The color is Green!&quot;</span>),</span><br><span class="line">        Color::<span class="title function_ invoke__">RGB</span>(r, g, b) =&gt;</span><br><span class="line">            <span class="built_in">println!</span>(<span class="string">&quot;Red: &#123;&#125;, green: &#123;&#125;, and blue: &#123;&#125;!&quot;</span>, r, g, b),</span><br><span class="line">        Color::<span class="title function_ invoke__">HSV</span>(h, s, v) =&gt;</span><br><span class="line">            <span class="built_in">println!</span>(<span class="string">&quot;Hue: &#123;&#125;, saturation: &#123;&#125;, value: &#123;&#125;!&quot;</span>, h, s, v),</span><br><span class="line">        Color::<span class="title function_ invoke__">HSL</span>(h, s, l) =&gt;</span><br><span class="line">            <span class="built_in">println!</span>(<span class="string">&quot;Hue: &#123;&#125;, saturation: &#123;&#125;, lightness: &#123;&#125;!&quot;</span>, h, s, l),</span><br><span class="line">        Color::<span class="title function_ invoke__">CMY</span>(c, m, y) =&gt;</span><br><span class="line">            <span class="built_in">println!</span>(<span class="string">&quot;Cyan: &#123;&#125;, magenta: &#123;&#125;, yellow: &#123;&#125;!&quot;</span>, c, m, y),</span><br><span class="line">        Color::<span class="title function_ invoke__">CMYK</span>(c, m, y, k) =&gt;</span><br><span class="line">            <span class="built_in">println!</span>(<span class="string">&quot;Cyan: &#123;&#125;, magenta: &#123;&#125;, yellow: &#123;&#125;, key (black): &#123;&#125;!&quot;</span>,</span><br><span class="line">                c, m, y, k),</span><br><span class="line">        <span class="comment">// 不需要其它分支，因为所有的情形都已覆盖</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>在一些场景下，用match匹配枚举类型并不够优雅，可以用 <code>if let</code> 来实现。</li>
-</ul>
-<p>例如</p>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">#![allow(unused)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line"><span class="comment">// 将 `optional` 定为 `Option&lt;i32&gt;` 类型</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">optional</span> = <span class="title function_ invoke__">Some</span>(<span class="number">7</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">match</span> optional &#123;</span><br><span class="line">    <span class="title function_ invoke__">Some</span>(i) =&gt; &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;This is a really long string and `&#123;:?&#125;`&quot;</span>, i);</span><br><span class="line">        <span class="comment">// ^ 行首需要 2 层缩进。这里从 optional 中解构出 `i`。</span></span><br><span class="line">        <span class="comment">// 译注：正确的缩进是好的，但并不是 “不缩进就不能运行” 这个意思。</span></span><br><span class="line">    &#125;,</span><br><span class="line">    _ =&gt; &#123;&#125;,</span><br><span class="line">    <span class="comment">// ^ 必须有，因为 `match` 需要覆盖全部情况。不觉得这行很多余吗？</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>我们可以使用if let</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="comment">// 全部都是 `Option&lt;i32&gt;` 类型</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">number</span> = <span class="title function_ invoke__">Some</span>(<span class="number">7</span>);</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">letter</span>: <span class="type">Option</span>&lt;<span class="type">i32</span>&gt; = <span class="literal">None</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">emoticon</span>: <span class="type">Option</span>&lt;<span class="type">i32</span>&gt; = <span class="literal">None</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// `if let` 结构读作：若 `let` 将 `number` 解构成 `Some(i)`，则执行</span></span><br><span class="line">    <span class="comment">// 语句块（`&#123;&#125;`）</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Some</span>(i) = number &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;Matched &#123;:?&#125;!&quot;</span>, i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果要指明失败情形，就使用 else：</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Some</span>(i) = letter &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;Matched &#123;:?&#125;!&quot;</span>, i);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 解构失败。切换到失败情形。</span></span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;Didn&#x27;t match a number. Let&#x27;s go with a letter!&quot;</span>);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 提供另一种失败情况下的条件。</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">i_like_letters</span> = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Some</span>(i) = emoticon &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;Matched &#123;:?&#125;!&quot;</span>, i);</span><br><span class="line">    <span class="comment">// 解构失败。使用 `else if` 来判断是否满足上面提供的条件。</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> i_like_letters &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;Didn&#x27;t match a number. Let&#x27;s go with a letter!&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 条件的值为 false。于是以下是默认的分支：</span></span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;I don&#x27;t like letters. Let&#x27;s go with an emoticon :)!&quot;</span>);</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>if let 可以匹配任意枚举值</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 以这个 enum 类型为例</span></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line">    Bar,</span><br><span class="line">    Baz,</span><br><span class="line">    <span class="title function_ invoke__">Qux</span>(<span class="type">u32</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="comment">// 创建变量</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = Foo::Bar;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">b</span> = Foo::Baz;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">c</span> = Foo::<span class="title function_ invoke__">Qux</span>(<span class="number">100</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 变量 a 匹配到了 Foo::Bar</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Foo</span>::Bar = a &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;a is foobar&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 变量 b 没有匹配到 Foo::Bar，因此什么也不会打印。</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Foo</span>::Bar = b &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;b is foobar&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 变量 c 匹配到了 Foo::Qux，它带有一个值，就和上面例子中的 Some() 类似。</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Foo</span>::<span class="title function_ invoke__">Qux</span>(value) = c &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;c is &#123;&#125;&quot;</span>, value);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="2-Option"><a href="#2-Option" class="headerlink" title="2. Option"></a>2. Option</h3><ul>
-<li>Option 是一个标准库中枚举类型，可以有 <code>Some</code> 值和 <code>None</code> 值，Option 类型应用广泛因为它编码了一个非常普遍的场景，即一个值要么有值要么没值。</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="title class_">Option</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="literal">None</span>,</span><br><span class="line">    <span class="title function_ invoke__">Some</span>(T),</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>只要一个值不是 Option<T> 类型，你就 可以 安全的认定它的值不为空。这是 Rust 的一个经过深思熟虑的设计决策，来限制空值的泛滥以增加 Rust 代码的安全性。</li>
-</ul>
-<h3 id="3-Result"><a href="#3-Result" class="headerlink" title="3. Result"></a>3. Result</h3><ul>
-<li>Result&lt;T, E&gt; 是一个标准库中枚举类型，可以有 <code>Ok</code> 值和 <code>Err</code> 值，Result 常用来处理可以恢复的错误。</li>
-</ul>
-<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="title class_">Result</span>&lt;T, E&gt; &#123;</span><br><span class="line">    <span class="title function_ invoke__">Ok</span>(T),</span><br><span class="line">    <span class="title function_ invoke__">Err</span>(E),</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><code>T</code> 代表成功时返回的 <code>Ok</code> 成员中的数据的类型，而 <code>E</code> 代表失败时返回的 <code>Err</code> 成员中的错误的类型</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1861,7 +1937,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
