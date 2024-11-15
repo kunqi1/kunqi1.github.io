@@ -20,15 +20,23 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="article">
+  <meta name="description" content="SPL（Solana Program Library） Token Program: 代币程序 Mint Account： 铸币账户 Token Account： 代币账户 Associated Token Account（ATA）：关联代币账户  账户之间的联系 代币程序结构：   代币程序包含与网络上的代币（FT与NFT）交互的所有指令逻辑，代币本身是代币程序持有的数据账户   铸币账户：">
+<meta property="og:type" content="article">
 <meta property="og:title" content="solana-token">
 <meta property="og:url" content="http://example.com/2024/11/15/solana-token/index.html">
 <meta property="og:site_name" content="0xkunqil">
+<meta property="og:description" content="SPL（Solana Program Library） Token Program: 代币程序 Mint Account： 铸币账户 Token Account： 代币账户 Associated Token Account（ATA）：关联代币账户  账户之间的联系 代币程序结构：   代币程序包含与网络上的代币（FT与NFT）交互的所有指令逻辑，代币本身是代币程序持有的数据账户   铸币账户：">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/token-program.svg">
+<meta property="og:image" content="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/mint-account.svg">
+<meta property="og:image" content="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/token-account.svg">
+<meta property="og:image" content="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/token-account-relationship.svg">
+<meta property="og:image" content="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/token-account-relationship-ata.svg">
 <meta property="article:published_time" content="2024-11-15T08:49:58.000Z">
-<meta property="article:modified_time" content="2024-11-15T08:49:58.370Z">
+<meta property="article:modified_time" content="2024-11-15T09:26:27.630Z">
 <meta property="article:author" content="Kunqi Liu">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/token-program.svg">
 
 <link rel="canonical" href="http://example.com/2024/11/15/solana-token/">
 
@@ -171,8 +179,9 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
+              
 
-              <time title="Created: 2024-11-15 16:49:58" itemprop="dateCreated datePublished" datetime="2024-11-15T16:49:58+08:00">2024-11-15</time>
+              <time title="Created: 2024-11-15 16:49:58 / Modified: 17:26:27" itemprop="dateCreated datePublished" datetime="2024-11-15T16:49:58+08:00">2024-11-15</time>
             </span>
 
           
@@ -186,7 +195,58 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <h3 id="SPL（Solana-Program-Library）"><a href="#SPL（Solana-Program-Library）" class="headerlink" title="SPL（Solana Program Library）"></a>SPL（Solana Program Library）</h3><ol>
+<li>Token Program: 代币程序</li>
+<li>Mint Account： 铸币账户</li>
+<li>Token Account： 代币账户</li>
+<li>Associated Token Account（ATA）：关联代币账户</li>
+</ol>
+<h4 id="账户之间的联系"><a href="#账户之间的联系" class="headerlink" title="账户之间的联系"></a>账户之间的联系</h4><ol>
+<li>代币程序结构：<br><img src="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/token-program.svg" alt="代币程序"></li>
+</ol>
+<ul>
+<li>代币程序包含与网络上的代币（FT与NFT）交互的所有指令逻辑，代币本身是代币程序持有的数据账户</li>
+</ul>
+<ol start="2">
+<li>铸币账户：<br><img src="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/mint-account.svg" alt="铸币账户"></li>
+</ol>
+<ul>
+<li>代币程序拥有铸造账户的唯一标识，Mint Account相当于存储了特定代币程序的全局权限和计数</li>
+</ul>
+<ol start="3">
+<li>代币账户：<br><img src="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/token-account.svg" alt="代币账户"></li>
+</ol>
+<ul>
+<li>代币账户也是由代币程序所持有，跟踪了每个代币的个人所有权，由<code>owner</code>字段标识，所有代币账户的程序权限都是代币程序持有，但是个人代币的所有权由个人钱包地址持有。</li>
+</ul>
+<ol start="4">
+<li>ATA账户</li>
+</ol>
+<ul>
+<li>为了简化查找特定铸造和所有者代币账户地址，通过钱包地址和铸币账户派生的一种程序派生账户PDA<br><img src="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/token-account-relationship.svg" alt="ATA账户"></li>
+</ul>
+<ol start="5">
+<li>账户关系扩展</li>
+</ol>
+<ul>
+<li>不同的钱包，为了持有不同的代币，与铸币账户和ATA账户之间的关系结构：</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/token-account-relationship-ata.svg" alt="账户关系扩展"></p>
+<h3 id="Solana-项目结构"><a href="#Solana-项目结构" class="headerlink" title="Solana 项目结构"></a>Solana 项目结构</h3><ul>
+<li>核心文件：</li>
+</ul>
+<ol>
+<li>processor.rs: 核心业务逻辑，处理指令</li>
+<li>state.rs: 定义账户的状态和扩展字段</li>
+<li>instruction.rs: 定义各种代币操作的指令</li>
+<li>error.rs: 定义了程序可能抛出的错误</li>
+<li>lib.rs: 程序入口点，汇总各个模块</li>
+</ol>
+<h3 id="实现一个本地Token合约交互"><a href="#实现一个本地Token合约交互" class="headerlink" title="实现一个本地Token合约交互"></a>实现一个本地Token合约交互</h3><ol>
+<li>创建mint账号</li>
+<li>创建ATA后Mint代币</li>
+</ol>
+
     </div>
 
     
@@ -263,6 +323,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#SPL%EF%BC%88Solana-Program-Library%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">SPL（Solana Program Library）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B4%A6%E6%88%B7%E4%B9%8B%E9%97%B4%E7%9A%84%E8%81%94%E7%B3%BB"><span class="nav-number">1.1.</span> <span class="nav-text">账户之间的联系</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solana-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">Solana 项目结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E6%9C%AC%E5%9C%B0Token%E5%90%88%E7%BA%A6%E4%BA%A4%E4%BA%92"><span class="nav-number">3.</span> <span class="nav-text">实现一个本地Token合约交互</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
