@@ -169,10 +169,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2024-11-14 14:41:06 / Modified: 15:24:51" itemprop="dateCreated datePublished" datetime="2024-11-14T14:41:06+08:00">2024-11-14</time>
+              <time title="Created: 2024-11-14 14:41:06" itemprop="dateCreated datePublished" datetime="2024-11-14T14:41:06+08:00">2024-11-14</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-11-15 14:07:29" itemprop="dateModified" datetime="2024-11-15T14:07:29+08:00">2024-11-15</time>
+              </span>
 
           
 
@@ -316,6 +322,26 @@
 
 <ul>
 <li>可以查询到，发生了两次转账行为</li>
+</ul>
+<h4 id="通俗总结"><a href="#通俗总结" class="headerlink" title="通俗总结"></a>通俗总结</h4><ul>
+<li><p>Solana 中的账户主要分为三种类型：</p>
+</li>
+<li><p>数据账户：用于存储数据。</p>
+</li>
+<li><p>程序账户：用于存储可执行程序。</p>
+</li>
+<li><p>原生账户：指 Solana 上的原生程序，例如 System、Stake 以及 Vote。</p>
+</li>
+<li><p>其中，数据账户可进一步分为两类：</p>
+</li>
+<li><p>系统所有账户：由 Solana 上的原生程序生成的账户。</p>
+</li>
+<li><p>程序派生账户 (PDA)：签名权限是程序的帐户，因此不像其他帐户那样受私钥控制。</p>
+</li>
+<li><p>每个账户都有一个地址（一般情况下是一个公钥）以及一个所有者（程序账户的地址）。前者与以太坊上的类似，后者可以简单理解为创建该账户的程序。</p>
+</li>
+<li><p>普通用户通过钱包生成的账户属于数据账户中的系统所有账户，默认的账户所有者是系统程序。我们可以简单理解为：用户通过系统程序生成了一个系统所有账户，这个账户存储了用户的基本信息和资产等数据，而这个账户拥有一个地址（也就是公钥）。</p>
+</li>
 </ul>
 
       

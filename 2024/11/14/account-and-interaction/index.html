@@ -31,7 +31,7 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/account-address.svg">
 <meta property="og:image" content="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/accountinfo.svg">
 <meta property="article:published_time" content="2024-11-14T06:41:06.000Z">
-<meta property="article:modified_time" content="2024-11-14T07:24:51.362Z">
+<meta property="article:modified_time" content="2024-11-15T06:07:29.489Z">
 <meta property="article:author" content="Kunqi Liu">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/kunqi1/kunqi1.github.io/refs/heads/main/images/accounts.svg">
@@ -177,10 +177,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2024-11-14 14:41:06 / Modified: 15:24:51" itemprop="dateCreated datePublished" datetime="2024-11-14T14:41:06+08:00">2024-11-14</time>
+              <time title="Created: 2024-11-14 14:41:06" itemprop="dateCreated datePublished" datetime="2024-11-14T14:41:06+08:00">2024-11-14</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-11-15 14:07:29" itemprop="dateModified" datetime="2024-11-15T14:07:29+08:00">2024-11-15</time>
+              </span>
 
           
 
@@ -325,6 +331,26 @@
 <ul>
 <li>可以查询到，发生了两次转账行为</li>
 </ul>
+<h4 id="通俗总结"><a href="#通俗总结" class="headerlink" title="通俗总结"></a>通俗总结</h4><ul>
+<li><p>Solana 中的账户主要分为三种类型：</p>
+</li>
+<li><p>数据账户：用于存储数据。</p>
+</li>
+<li><p>程序账户：用于存储可执行程序。</p>
+</li>
+<li><p>原生账户：指 Solana 上的原生程序，例如 System、Stake 以及 Vote。</p>
+</li>
+<li><p>其中，数据账户可进一步分为两类：</p>
+</li>
+<li><p>系统所有账户：由 Solana 上的原生程序生成的账户。</p>
+</li>
+<li><p>程序派生账户 (PDA)：签名权限是程序的帐户，因此不像其他帐户那样受私钥控制。</p>
+</li>
+<li><p>每个账户都有一个地址（一般情况下是一个公钥）以及一个所有者（程序账户的地址）。前者与以太坊上的类似，后者可以简单理解为创建该账户的程序。</p>
+</li>
+<li><p>普通用户通过钱包生成的账户属于数据账户中的系统所有账户，默认的账户所有者是系统程序。我们可以简单理解为：用户通过系统程序生成了一个系统所有账户，这个账户存储了用户的基本信息和资产等数据，而这个账户拥有一个地址（也就是公钥）。</p>
+</li>
+</ul>
 
     </div>
 
@@ -402,7 +428,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Solana-%E8%B4%A6%E6%88%B7%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">Solana 账户模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E8%A6%81%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">核心要点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B4%A6%E6%88%B7"><span class="nav-number">1.2.</span> <span class="nav-text">账户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B4%A6%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="nav-number">1.3.</span> <span class="nav-text">账户信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8E%9F%E7%94%9F%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.4.</span> <span class="nav-text">原生程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.5.</span> <span class="nav-text">系统程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BPFLoader-%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.6.</span> <span class="nav-text">BPFLoader 程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sysvar-%E5%B8%90%E6%88%B7"><span class="nav-number">1.7.</span> <span class="nav-text">Sysvar 帐户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.8.</span> <span class="nav-text">自定义程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E8%B4%A6%E6%88%B7"><span class="nav-number">1.9.</span> <span class="nav-text">程序账户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%B8%90%E6%88%B7"><span class="nav-number">1.10.</span> <span class="nav-text">数据帐户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Solana-SDK%E6%B5%8B%E8%AF%95"><span class="nav-number">1.11.</span> <span class="nav-text">Solana SDK测试</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Solana-%E8%B4%A6%E6%88%B7%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">Solana 账户模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E8%A6%81%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">核心要点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B4%A6%E6%88%B7"><span class="nav-number">1.2.</span> <span class="nav-text">账户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B4%A6%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="nav-number">1.3.</span> <span class="nav-text">账户信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8E%9F%E7%94%9F%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.4.</span> <span class="nav-text">原生程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.5.</span> <span class="nav-text">系统程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BPFLoader-%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.6.</span> <span class="nav-text">BPFLoader 程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sysvar-%E5%B8%90%E6%88%B7"><span class="nav-number">1.7.</span> <span class="nav-text">Sysvar 帐户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.8.</span> <span class="nav-text">自定义程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E8%B4%A6%E6%88%B7"><span class="nav-number">1.9.</span> <span class="nav-text">程序账户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%B8%90%E6%88%B7"><span class="nav-number">1.10.</span> <span class="nav-text">数据帐户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Solana-SDK%E6%B5%8B%E8%AF%95"><span class="nav-number">1.11.</span> <span class="nav-text">Solana SDK测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%9A%E4%BF%97%E6%80%BB%E7%BB%93"><span class="nav-number">1.12.</span> <span class="nav-text">通俗总结</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
